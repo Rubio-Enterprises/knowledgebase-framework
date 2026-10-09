@@ -109,7 +109,17 @@ group_embedded() {
   check "embedded wiring: a broken document blocks the parent's commit, naming its knowledgebase" \
     bash -c "! git -C '$parent' cat-file -e HEAD:notes/docs/broken-example.md 2>/dev/null && printf '%s' \"\$1\" | grep -q 'knowledgebase notes: the schema check failed'" _ "$out"
   note "$(printf '%s\n' "$out" | strip_colors | grep -E 'knowledgebase notes|broken-example' | head -3)"
-  git -C "$parent" rm -q --cached notes/docs/broken-example.md && rm "$parent/notes/docs/broken-example.md"
+  git -C "$parent" reset -q
+
+  # The broken document stays on disk, unstaged: a commit that changes only knowledge/ skips notes/.
+  printf 'note\n' >"$parent/knowledge/assets/note.txt"
+  out="$(cd "$parent" && git add knowledge/assets/note.txt && git commit -m "docs: a note" 2>&1)"
+  check "pre-commit scope: a commit checks only the knowledgebases it changes" \
+    bash -c "[ \"\$(git -C '$parent' log -1 --format=%s)\" = 'docs: a note' ]" || note "$out"
+  out="$(cd "$parent" && lefthook run kb-check 2>&1)"
+  check "pre-commit scope: kb-check still covers every knowledgebase" \
+    bash -c "printf '%s' \"\$1\" | grep -q 'knowledgebase notes: the schema check failed'" _ "$out"
+  rm "$parent/notes/docs/broken-example.md"
 }
 
 # A root knowledgebase holding the must-pass fixture, committed.

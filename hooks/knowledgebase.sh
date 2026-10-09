@@ -345,3 +345,5 @@ step) run_step "${2:?step}" "${3:?knowledgebase folder}" check ;;
   exit 2
   ;;
 esac
+    # A commit checks only the knowledgebases it changes; kb-check covers them all.
+    if [ "$1" = commit ] && git diff --cached --quiet -- "$kb"; then continue; fi

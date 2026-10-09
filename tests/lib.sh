@@ -32,7 +32,10 @@ fail() {
 check() { # description command... : passes when the command succeeds
   local name=$1 out
   shift
-  if out="$("$@" 2>&1)"; then pass "$name"; else fail "$name" "$out"; fi
+  if out="$("$@" 2>&1)"; then pass "$name"; else
+    fail "$name" "$out"
+    return 1
+  fi
 }
 note() { [ -z "${KB_TEST_VERBOSE:-}" ] || printf '%s\n' "$1" | sed 's/^/    | /'; }
 strip_colors() { sed $'s/\x1b\\[[0-9;]*m//g'; }
