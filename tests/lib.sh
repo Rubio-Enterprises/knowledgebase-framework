@@ -13,6 +13,8 @@
 
 FW="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 HOOKS_URL=https://github.com/Rubio-Enterprises/knowledgebase-framework.git
+# shellcheck disable=SC2034 # used by tests/run.sh
+NODE=node@24.21.0 # the node the Hooks pin, for running npm tools in tests
 BASELINE_TAG=v1.0.0
 NEW_TAG=v1.99.0
 FAILED=0

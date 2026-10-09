@@ -235,13 +235,13 @@ group_markdownlint() {
   }
   overlay "$FW/tests/fixtures/pass" "$parent/knowledge"
   # Explicit paths, the way treefmt calls markdownlint-cli2.
-  out="$(cd "$parent" && find . -name '*.md' -not -path './.git/*' | sort | xargs mise x npm:markdownlint-cli2@0.23.1 -- markdownlint-cli2 2>&1)"
+  out="$(cd "$parent" && find . -name '*.md' -not -path './.git/*' | sort | xargs mise x "$NODE" npm:markdownlint-cli2@0.23.1 -- markdownlint-cli2 2>&1)"
   note "$(printf '%s\n' "$out" | strip_colors | grep -E 'Linting|Summary|MD[0-9]{3}' | head -8)"
   check "markdownlint: still lints the parent's own Markdown" bash -c "printf '%s' \"\$1\" | grep -q 'docs/parent.md:.*MD025'" _ "$out"
   check "markdownlint: skips everything in the knowledgebase" bash -c "! printf '%s' \"\$1\" | grep -q 'knowledge/.*MD[0-9]'" _ "$out"
   # Control: without the knowledgebase's opt-out, the same run flags its documents.
   rm "$parent/knowledge/.markdownlint.jsonc"
-  out="$(cd "$parent" && find . -name '*.md' -not -path './.git/*' | sort | xargs mise x npm:markdownlint-cli2@0.23.1 -- markdownlint-cli2 2>&1)"
+  out="$(cd "$parent" && find . -name '*.md' -not -path './.git/*' | sort | xargs mise x "$NODE" npm:markdownlint-cli2@0.23.1 -- markdownlint-cli2 2>&1)"
   note "$(printf '%s\n' "$out" | strip_colors | grep -E 'Summary|knowledge/.*MD[0-9]{3}' | head -3)"
   check "markdownlint: without the opt-out, the same run flags the knowledgebase's documents" \
     bash -c "printf '%s' \"\$1\" | grep -q 'knowledge/docs/.*MD[0-9]'" _ "$out"
@@ -272,12 +272,12 @@ EOF
   note "$(printf '%s\n' "$out" | strip_colors | grep -E '✔️|✘|seconds\)' | head -4)"
   check "likec4: a .c4 change commits through the Hooks" test "$(git -C "$kb" log -1 --format=%s)" = "docs: add checkout views"
   check "likec4: the commit formatted the .c4 file" \
-    bash -c "! cmp -s '$T/journeys.unformatted' '$kb/assets/likec4/journeys.c4' && cd '$kb' && mise x npm:likec4@1.59.4 -- likec4 format --check assets/likec4 >/dev/null 2>&1"
+    bash -c "! cmp -s '$T/journeys.unformatted' '$kb/assets/likec4/journeys.c4' && cd '$kb' && mise x $NODE npm:likec4@1.59.4 -- likec4 format --check assets/likec4 >/dev/null 2>&1"
   check "likec4: both views exported next to their sources and committed" \
     bash -c "git -C '$kb' cat-file -e HEAD:assets/likec4/checkout.png && git -C '$kb' cat-file -e HEAD:assets/likec4/checkout-boxes.png && [ -z \"\$(git -C '$kb' status --porcelain)\" ]"
   tmp="$T/likec4-reference"
-  (cd "$kb" && mise x npm:likec4@1.59.4 -- likec4 export png --flat -o "$tmp/seq" --seq -f checkout -f checkout-boxes assets/likec4 >/dev/null 2>&1 &&
-    mise x npm:likec4@1.59.4 -- likec4 export png --flat -o "$tmp/box" -f checkout -f checkout-boxes assets/likec4 >/dev/null 2>&1)
+  (cd "$kb" && mise x $NODE npm:likec4@1.59.4 -- likec4 export png --flat -o "$tmp/seq" --seq -f checkout -f checkout-boxes assets/likec4 >/dev/null 2>&1 &&
+    mise x $NODE npm:likec4@1.59.4 -- likec4 export png --flat -o "$tmp/box" -f checkout -f checkout-boxes assets/likec4 >/dev/null 2>&1)
   check "likec4: the view declared variant sequence exported as a sequence diagram" \
     bash -c "cmp -s '$kb/assets/likec4/checkout.png' '$tmp/seq/checkout.png' && ! cmp -s '$kb/assets/likec4/checkout.png' '$tmp/box/checkout.png'"
   check "likec4: the view without a variant exported as a box diagram" \

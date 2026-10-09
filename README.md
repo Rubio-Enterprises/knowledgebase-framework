@@ -17,7 +17,9 @@ layout is what it is: [`docs/layout-rationale.md`](docs/layout-rationale.md).
 
 ## Requirements
 
-- `git`, `mise`, `lefthook` and `copier` (9.15 or later) on your PATH.
+- `git`, `mise`, `lefthook` and `copier` (9.15 or later) on your PATH. Nothing else: the Hooks
+  fetch every tool they use through `mise x`, including the node that likec4 and Playwright run
+  on.
 - Read access to `Rubio-Enterprises/knowledgebase-framework` through your git credentials: lefthook
   fetches the Hooks over HTTPS.
 - A network connection the first time. The Hooks download their pinned tools through `mise x` on

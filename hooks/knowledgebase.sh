@@ -28,10 +28,12 @@ okf() { mise x 'cargo:okf[default-features=false,features=validator]@0.2.7' -- o
 yq() { mise x aqua:mikefarah/yq@4.53.6 -- yq "$@"; }
 jq() { mise x aqua:jqlang/jq@1.8.2 -- jq "$@"; }
 check_jsonschema() { mise x pipx:check-jsonschema@0.37.4 -- check-jsonschema "$@"; }
-likec4() { mise x npm:likec4@1.59.4 -- likec4 "$@"; }
+# The npm tools carry their own node, so no global node is needed.
+NODE=node@24.21.0
+likec4() { mise x "$NODE" npm:likec4@1.59.4 -- likec4 "$@"; }
 # Keep in step with the Playwright that likec4 bundles (1.60.0 for likec4 1.59.4): it installs the
 # Chromium revision likec4's PNG export looks for, which likec4 never downloads itself.
-playwright() { mise x npm:playwright@1.60.0 -- playwright "$@"; }
+playwright() { mise x "$NODE" npm:playwright@1.60.0 -- playwright "$@"; }
 
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
