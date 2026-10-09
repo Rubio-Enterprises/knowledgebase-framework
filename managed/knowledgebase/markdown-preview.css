@@ -1,0 +1,20 @@
+/* VS Code Markdown preview styles for knowledgebase documents. Managed by the Knowledgebase
+   Framework: the Hooks rewrite this file at every commit.
+
+   The footnote extension (markdown-it-footnote) draws a rule above the footnote list. A document
+   that ends with a Sources heading already has the heading's underline there, so drop the extra
+   rule only in that case. */
+h1 + hr.footnotes-sep,
+h2 + hr.footnotes-sep,
+h3 + hr.footnotes-sep {
+  display: none;
+}
+
+/* VS Code renders frontmatter as <table class="frontmatter"> with one <tr><th>key</th><td>value</td>
+   per key, and nothing marks which key a row is. `sources` is the one key whose value is a list of
+   mappings (<ul><li><code>), and okf's canonical key order puts it last. The footnotes already show
+   the sources readably, so hide the raw row. (A `verified` list would match too if it were the last
+   key.) */
+table.frontmatter tr:last-child:has(> td > ul > li > code) {
+  display: none;
+}

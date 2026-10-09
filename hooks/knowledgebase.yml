@@ -1,0 +1,25 @@
+# Knowledgebase Framework Hooks. Knowledgebases fetch this file through lefthook `remotes` from the
+# framework's `v1` branch, refetched every 24 hours (ADR-0004). Each job runs a script from
+# .lefthook/<hook>/, which hands over to hooks/knowledgebase.sh.
+pre-commit:
+  jobs:
+    - name: knowledgebase-notices
+      script: notices.sh
+      runner: bash
+    - name: knowledgebase
+      script: knowledgebase.sh
+      runner: bash
+
+# `lefthook run kb-check`: every check a commit runs, without staging anything.
+kb-check:
+  jobs:
+    - name: knowledgebase
+      script: knowledgebase.sh
+      runner: bash
+
+# `lefthook run kb-diagrams`: format, validate and re-export every LikeC4 add-on.
+kb-diagrams:
+  jobs:
+    - name: knowledgebase-diagrams
+      script: knowledgebase.sh
+      runner: bash
