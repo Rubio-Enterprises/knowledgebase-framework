@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # The framework's tests: `bash tests/run.sh [group...]`. Offline once the pinned tools are cached.
-# Groups: syntax creation embedded fixtures update fail-closed managed markdownlint likec4 notices
+# Groups: syntax reference creation embedded fixtures update fail-closed managed unstaged markdownlint
+# likec4 notices
 # KB_TEST_VERBOSE=1 shows evidence lines; KB_TEST_KEEP=1 keeps the scratch folder.
 set -uo pipefail
 # shellcheck source=tests/lib.sh
@@ -232,6 +233,80 @@ group_managed() {
       printf '%s' \"\$1\" | grep -qF '<!-- BEGIN knowledgebase-framework managed block' && [ \"\$(git -C '$kb' log -1 --format=%s)\" != 'docs: drop the markers' ]" _ "$out"
 }
 
+# commit_fails <kb> <message> <name>: a commit attempt in <kb> is refused with <message>.
+commit_fails() {
+  local out
+  out="$(cd "$1" && git commit -m "docs: should not land" 2>&1)"
+  check "$3" bash -c "printf '%s' \"\$1\" | grep -qF -- \"\$2\" && [ \"\$(git -C '$1' log -1 --format=%s)\" != 'docs: should not land' ]" _ "$out" "$2"
+}
+
+group_unstaged() {
+  local kb="$T/unstaged" out msg='has unstaged changes that the Hooks would overwrite or stage. Stage or stash them'
+  [ -d "$T/root-likec4-true" ] || create "$T/root-likec4-true" -d likec4=true
+  cp -R "$T/root-likec4-true" "$kb"
+  printf 'note\n' >"$kb/assets/note.txt"
+  git -C "$kb" add assets/note.txt
+
+  # An unstaged edit inside the managed block: the Hooks would rewrite AGENTS.md.
+  # shellcheck disable=SC2016 # the backticks are Markdown
+  sed -i.bak 's/^Run `lefthook run kb-check`: it runs every check a commit runs\./Skip the checks./' "$kb/AGENTS.md" && rm "$kb/AGENTS.md.bak"
+  commit_fails "$kb" "AGENTS.md $msg" "unstaged changes: an unstaged managed-block edit blocks the commit, naming AGENTS.md"
+  check "unstaged changes: AGENTS.md is left as it was and stays unstaged" \
+    bash -c "grep -q 'Skip the checks' '$kb/AGENTS.md' && ! git -C '$kb' diff --cached --name-only | grep -qx AGENTS.md"
+  git -C "$kb" checkout -q AGENTS.md
+
+  # An unstaged edit in a local section, with the managed block current: nothing to rewrite.
+  printf '\nLocal rule, not yet staged.\n' >>"$kb/README.md"
+  out="$(cd "$kb" && git commit -m "docs: a note" 2>&1)"
+  check "unstaged changes: an unrelated unstaged edit lets the commit through and stays unstaged" \
+    bash -c "[ \"\$(git -C '$kb' log -1 --format=%s)\" = 'docs: a note' ] && ! git -C '$kb' show HEAD:README.md | grep -q 'not yet staged' &&
+      git -C '$kb' diff --name-only | grep -qx README.md" || note "$out"
+  git -C "$kb" checkout -q README.md
+
+  # okf fmt would normalize a staged document that also holds unstaged edits.
+  cp "$FW/tests/fixtures/pass/docs/about-tracing-tools.md" "$kb/docs/"
+  awk '/^tags:$/ {print "tags: [observability, tracing]"; skip = 1; next} skip && /^  - / {next} {skip = 0; print}' \
+    "$FW/tests/fixtures/pass/docs/about-tracing-tools.md" >"$kb/docs/about-tracing-tools.md"
+  git -C "$kb" add docs/about-tracing-tools.md
+  printf '\nAn unstaged paragraph.\n' >>"$kb/docs/about-tracing-tools.md"
+  cp "$kb/docs/about-tracing-tools.md" "$T/tracing.before"
+  commit_fails "$kb" "docs/about-tracing-tools.md $msg" "unstaged changes: okf fmt refuses a document with unstaged edits, naming it"
+  check "unstaged changes: the document is left exactly as it was" cmp -s "$T/tracing.before" "$kb/docs/about-tracing-tools.md"
+  # The same, with the unstaged edit on the very lines okf fmt rewrites: nothing may be lost.
+  git -C "$kb" checkout -q docs/about-tracing-tools.md
+  sed -i.bak 's/^tags: \[observability, tracing\]$/tags: [observability, tracing, apm]/' "$kb/docs/about-tracing-tools.md" &&
+    rm "$kb/docs/about-tracing-tools.md.bak"
+  cp "$kb/docs/about-tracing-tools.md" "$T/tracing.before"
+  commit_fails "$kb" "docs/about-tracing-tools.md $msg" "unstaged changes: an unstaged edit on the lines okf fmt rewrites is refused, naming the file"
+  check "unstaged changes: that edit survives in the working tree" cmp -s "$T/tracing.before" "$kb/docs/about-tracing-tools.md"
+  git -C "$kb" reset -q docs/about-tracing-tools.md && rm "$kb/docs/about-tracing-tools.md"
+
+  # A staged .c4 change with another, unstaged one: the export would not match the commit.
+  sed -i.bak "s/title 'Landscape view'/title 'Landscape'/" "$kb/assets/likec4/views.c4" && rm "$kb/assets/likec4/views.c4.bak"
+  git -C "$kb" add assets/likec4/views.c4
+  printf '\n// an unstaged comment\n' >>"$kb/assets/likec4/model.c4"
+  commit_fails "$kb" "assets/likec4/model.c4 $msg" "unstaged changes: an unstaged .c4 edit blocks a LikeC4 commit, naming the file"
+  git -C "$kb" checkout -q assets/likec4/model.c4
+
+  # An exported PNG with unstaged changes the export would overwrite.
+  printf 'not a picture\n' >"$kb/assets/likec4/index.png"
+  commit_fails "$kb" "assets/likec4/index.png $msg" "unstaged changes: an exported PNG with unstaged changes blocks the commit, naming it"
+  check "unstaged changes: the export puts that PNG back as it was" grep -q 'not a picture' "$kb/assets/likec4/index.png"
+  git -C "$kb" checkout -q assets/likec4/index.png
+
+  # Untracked files the Hooks would delete: a stray PNG, a file in .knowledgebase/.
+  printf 'stray\n' >"$kb/assets/likec4/stray.png"
+  commit_fails "$kb" "assets/likec4/stray.png $msg" "unstaged changes: an untracked PNG matching no view is refused, not deleted"
+  check "unstaged changes: the untracked PNG is still there" test -f "$kb/assets/likec4/stray.png"
+  rm "$kb/assets/likec4/stray.png"
+  printf 'mine\n' >"$kb/.knowledgebase/notes.md"
+  commit_fails "$kb" ".knowledgebase/notes.md $msg" "unstaged changes: an untracked file in .knowledgebase/ is refused, not deleted"
+  rm "$kb/.knowledgebase/notes.md"
+  out="$(cd "$kb" && git commit -m "docs: retitle the landscape" 2>&1)"
+  check "unstaged changes: with everything staged, the same commit goes through" \
+    test "$(git -C "$kb" log -1 --format=%s)" = "docs: retitle the landscape" || note "$out"
+}
+
 group_markdownlint() {
   local parent="$T/mdlint" out
   mkdir -p "$parent/docs"
@@ -294,6 +369,37 @@ EOF
     bash -c "cmp -s '$kb/assets/likec4/checkout-boxes.png' '$tmp/box/checkout-boxes.png' && ! cmp -s '$kb/assets/likec4/checkout-boxes.png' '$tmp/seq/checkout-boxes.png'"
   check "likec4: lefthook run kb-diagrams re-exports and changes nothing" \
     bash -c "cd '$kb' && lefthook run kb-diagrams >/dev/null 2>&1 && [ -z \"\$(git status --porcelain)\" ]"
+
+  # A deleted view's PNG goes with it; pictures in images/ stay.
+  mkdir -p "$kb/assets/likec4/images"
+  cp "$kb/assets/likec4/index.png" "$kb/assets/likec4/images/logo.png"
+  awk '/dynamic view checkout-boxes/ {skip = 1} !skip {print} skip && /^  }/ {skip = 0}' \
+    "$kb/assets/likec4/journeys.c4" >"$T/journeys.c4" && cp "$T/journeys.c4" "$kb/assets/likec4/journeys.c4"
+  out="$(cd "$kb" && git add -A && git commit -m "docs: drop the box view" 2>&1)"
+  check "likec4: a deleted view's PNG is deleted in the same commit" \
+    bash -c "[ \"\$(git -C '$kb' log -1 --format=%s)\" = 'docs: drop the box view' ] && ! git -C '$kb' cat-file -e HEAD:assets/likec4/checkout-boxes.png 2>/dev/null &&
+      [ ! -e '$kb/assets/likec4/checkout-boxes.png' ] && [ -z \"\$(git -C '$kb' status --porcelain)\" ]" || note "$out"
+  check "likec4: PNGs in images/ are left alone" git -C "$kb" cat-file -e HEAD:assets/likec4/images/logo.png
+
+  # No node on PATH and no global mise config: the Hooks bring their own node.
+  mkdir -p "$T/bare-bin"
+  ln -sf "$(command -v git)" "$(command -v mise)" "$(command -v lefthook)" "$T/bare-bin/"
+  : >"$T/empty-mise.toml"
+  rm "$kb/assets/likec4/index.png"
+  out="$(cd "$kb" && PATH="$T/bin:$T/bare-bin:/usr/bin:/bin" MISE_GLOBAL_CONFIG_FILE="$T/empty-mise.toml" \
+    bash -c '! command -v node >/dev/null && lefthook run kb-diagrams' 2>&1)"
+  check "likec4: kb-diagrams runs with no node on PATH" \
+    bash -c "[ -f '$kb/assets/likec4/index.png' ] && [ -z \"\$(git -C '$kb' status --porcelain)\" ]" || note "$out"
+}
+
+group_reference() {
+  local headings contents
+  headings="$(awk '/^```/ {fence = !fence} !fence && /^## / {sub(/^## /, ""); print}' "$FW/managed/knowledgebase/reference.md")"
+  contents="$(sed -n 's/^- \[\(.*\)\](#.*)$/\1/p' "$FW/managed/knowledgebase/reference.md")"
+  check "reference.md: its contents list names every section, in order" test "$headings" = "$contents"
+  check "reference.md: every contents link points at its section's anchor" \
+    bash -c "sed -n 's/^- \\[\\(.*\\)\\](#\\(.*\\))$/\\1|\\2/p' '$FW/managed/knowledgebase/reference.md' |
+      while IFS='|' read -r t a; do [ \"\$(printf '%s' \"\$t\" | tr 'A-Z ' 'a-z-')\" = \"\$a\" ] || exit 1; done"
 }
 
 group_notices() {
@@ -308,7 +414,7 @@ group_notices() {
     bash -c "printf '%s' \"\$1\" | grep -q 'its Shell ($NEW_TAG) predates v9.0.0. Run .copier update --trust -a .copier-answers.knowledgebase.yml. in it' && [ \"\$(git -C '$kb' log -1 --format=%s)\" = 'docs: a note' ]" _ "$out"
 }
 
-ALL_GROUPS="syntax creation embedded fixtures update fail-closed managed markdownlint likec4 notices"
+ALL_GROUPS="syntax reference creation embedded fixtures update fail-closed managed unstaged markdownlint likec4 notices"
 setup_world
 # shellcheck disable=SC2048,SC2086 # group names never contain spaces
 for g in ${*:-$ALL_GROUPS}; do

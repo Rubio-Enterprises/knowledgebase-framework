@@ -39,19 +39,79 @@ WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 STAGE="$WORK/stage" # paths the pipeline rewrote, staged at the end of a pre-commit run
 : >"$STAGE"
+MODE=check # commit, check or diagrams: set per knowledgebase by the pipeline
 
 # --- Helpers ------------------------------------------------------------------------------------
 # Path of $2 inside knowledgebase $1, written the way git prints paths ("docs/x", not "./docs/x").
 at() { if [ "$1" = . ]; then printf '%s' "$2"; else printf '%s/%s' "$1" "$2"; fi; }
 say() { printf 'knowledgebase %s: %s\n' "$([ "$1" = . ] && echo '(repository root)' || echo "$1")" "$2" >&2; }
 
-# Move $1 over $2 when their contents differ, and remember $2 for staging.
+# --- Unstaged changes --------------------------------------------------------------------------
+# A commit takes what is staged, so in a pre-commit run the Hooks stage only their own output and
+# never touch a file that holds unstaged changes. Before any step writes, each run records the files
+# under the knowledgebase that differ from the index: modified, deleted or untracked.
+record_unstaged() {
+  { git diff --name-only -- "$1" && git ls-files --others --exclude-standard -- "$1" && hidden_by_lefthook; } |
+    sort -u >"$WORK/unstaged"
+}
+
+# Before pre-commit jobs run, lefthook 2 hides the unstaged hunks of partly staged files and saves
+# them in .git/info/lefthook-unstaged.patch, so `git diff` can't see them. Those files hold unstaged
+# changes too, and a rewrite would stop lefthook putting the hunks back. Lefthook deletes the patch
+# once it has restored them, so only a patch from this commit's run (minutes old) counts.
+hidden_by_lefthook() {
+  local patch
+  patch="$(git rev-parse --git-path info/lefthook-unstaged.patch)"
+  [ -f "$patch" ] && [ -n "$(find "$patch" -mmin -10)" ] || return 0
+  sed -n 's#^diff --git a/\(.*\) b/.*#\1#p' "$patch"
+}
+
+# Does path $1, or anything under it, hold unstaged changes? Only a pre-commit run asks.
+unstaged() {
+  [ "$MODE" = commit ] || return 1
+  awk -v p="$1" '$0 == p || index($0, p "/") == 1 { found = 1 } END { exit !found }' "$WORK/unstaged"
+}
+
+unstaged_error() {
+  echo "$1 has unstaged changes that the Hooks would overwrite or stage. Stage or stash them, then commit again." >&2
+}
+
+# Move $1 over $2 when their contents differ, and remember $2 for staging. Refuses, leaving $2 as it
+# is, when $2 holds unstaged changes.
 replace_if_changed() {
   if [ -f "$2" ] && cmp -s "$1" "$2"; then
     rm -f "$1"
+  elif unstaged "$2"; then
+    rm -f "$1"
+    unstaged_error "$2"
+    return 1
   else
     cat "$1" >"$2" && rm -f "$1" && printf '%s\n' "$2" >>"$STAGE"
   fi
+}
+
+# Tools such as okf index and likec4 export rewrite files in place. Keep a copy of every file in
+# list $1 that holds unstaged changes, run the tool, then put back each copy the tool changed and
+# report it. Files the tool changed and that had no unstaged changes are remembered for staging.
+guarded() { # list command...
+  local list=$1 f n=0 status=0
+  shift
+  : >"$WORK/kept"
+  while IFS= read -r f; do
+    if unstaged "$f"; then
+      n=$((n + 1))
+      cp "$f" "$WORK/kept.$n" && printf '%s\t%s\n' "$n" "$f" >>"$WORK/kept"
+    fi
+  done <"$list"
+  "$@" || status=1
+  while IFS="$(printf '\t')" read -r n f; do
+    if ! cmp -s "$WORK/kept.$n" "$f"; then
+      cp "$WORK/kept.$n" "$f"
+      unstaged_error "$f"
+      status=1
+    fi
+  done <"$WORK/kept"
+  return "$status"
 }
 
 # Every knowledgebase in the repository, one folder per line.
@@ -113,7 +173,7 @@ fill_block() {
     $0 == e { skip = 0 }
     !skip { print }
   ' "$file" >"$WORK/block"
-  replace_if_changed "$WORK/block" "$file"
+  replace_if_changed "$WORK/block" "$file" || return 1
 }
 
 step_managed() {
@@ -125,11 +185,16 @@ step_managed() {
   mkdir -p "$dir"
   for f in "$FRAMEWORK"/managed/knowledgebase/*; do
     cp "$f" "$WORK/managed-file"
-    replace_if_changed "$WORK/managed-file" "$dir/$(basename "$f")"
+    replace_if_changed "$WORK/managed-file" "$dir/$(basename "$f")" || status=1
   done
   for f in "$dir"/* "$dir"/.[!.]*; do
     [ -e "$f" ] || continue
     if [ ! -e "$FRAMEWORK/managed/knowledgebase/$(basename "$f")" ]; then
+      if unstaged "$f"; then
+        unstaged_error "$f"
+        status=1
+        continue
+      fi
       rm -rf "$f"
       printf '%s\n' "$f" >>"$STAGE"
     fi
@@ -139,7 +204,7 @@ step_managed() {
 
 # --- Steps 2-4: okf -------------------------------------------------------------------------------
 step_fmt() {
-  local kb=$1 mode=$2 docs f before
+  local kb=$1 mode=$2 docs f status=0
   docs="$(at "$kb" docs)"
   [ -d "$docs" ] || return 0
   if [ "$mode" = commit ]; then
@@ -147,19 +212,23 @@ step_fmt() {
   else
     find "$docs" -type f -name '*.md' >"$WORK/fmt"
   fi
+  mkdir -p "$WORK/fmt.d"
   while IFS= read -r f; do
     case "$f" in *.md) ;; *) continue ;; esac
     [ "$(basename "$f")" != index.md ] && [ -f "$f" ] || continue
-    before="$(cksum <"$f")"
-    quiet okf fmt -w "$f" || return 1
-    [ "$before" = "$(cksum <"$f")" ] || printf '%s\n' "$f" >>"$STAGE"
+    # Format a copy, so a file with unstaged changes is left as it is.
+    cp "$f" "$WORK/fmt.d/$(basename "$f")"
+    quiet okf fmt -w "$WORK/fmt.d/$(basename "$f")" || return 1
+    replace_if_changed "$WORK/fmt.d/$(basename "$f")" "$f" || status=1
   done <"$WORK/fmt"
+  return "$status"
 }
 
 step_index() {
   local kb=$1 docs
   docs="$(at "$kb" docs)"
-  quiet okf index "$docs" || return 1
+  find "$docs" -type f -name index.md >"$WORK/indexes"
+  guarded "$WORK/indexes" quiet okf index "$docs" || return 1
   find "$docs" -type f -name index.md >>"$STAGE"
 }
 
@@ -233,16 +302,50 @@ export_pngs() {
   if [ "$#" -gt 0 ]; then quiet likec4 export png --seq "$@" "$dir" || return 1; fi
 }
 
+# The PNGs of LikeC4 project $1: every PNG except those in an images/ folder, which LikeC4 projects
+# use for the pictures their models embed.
+exported_pngs() { find "$1" -name images -prune -o -type f -name '*.png' -print | sort; }
+
+# Delete every exported PNG of project $1 that matches no view in the model export, so a deleted or
+# renamed view leaves no picture behind.
+remove_orphan_pngs() {
+  local dir=$1 png status=0
+  jq -r '[.[].views // {} | keys[]] | unique[]' "$WORK/model.json" >"$WORK/views" || return 1
+  while IFS= read -r png; do
+    grep -Fx -- "$(basename "$png" .png)" "$WORK/views" >/dev/null && continue
+    if unstaged "$png"; then
+      unstaged_error "$png"
+      status=1
+      continue
+    fi
+    rm -f "$png"
+    printf '%s\n' "$png" >>"$STAGE"
+  done < <(exported_pngs "$dir")
+  return "$status"
+}
+
 step_likec4() {
-  local kb=$1 mode=$2 dir
+  local kb=$1 mode=$2 dir f status=0
   dir="$(at "$kb" assets/likec4)"
   [ -d "$dir" ] || return 0
   likec4_changed "$dir" "$mode" || return 0
+  # The exports follow the whole model on disk, so every source must match what the commit takes.
+  if [ "$mode" = commit ]; then
+    while IFS= read -r f; do
+      case "$f" in "$dir"/*) ;; *) continue ;; esac
+      case "$f" in */images/*) ;; *.png) continue ;; esac
+      unstaged_error "$f"
+      status=1
+    done <"$WORK/unstaged"
+    [ "$status" -eq 0 ] || return 1
+  fi
   quiet likec4 format "$dir" || return 1
   quiet likec4 validate "$dir" || return 1
   quiet playwright install chromium-headless-shell || return 1
-  export_pngs "$dir" || return 1
-  find "$dir" -type f \( -name '*.c4' -o -name '*.png' \) >>"$STAGE"
+  exported_pngs "$dir" >"$WORK/pngs"
+  guarded "$WORK/pngs" export_pngs "$dir" || return 1
+  remove_orphan_pngs "$dir" || return 1
+  find "$dir" -name images -prune -o -type f \( -name '*.c4' -o -name '*.png' \) -print >>"$STAGE"
 }
 
 # --- Pipeline ---------------------------------------------------------------------------------------
@@ -261,6 +364,8 @@ run_step() { # step kb mode
 
 pipeline() { # kb mode
   local step
+  MODE=$2
+  [ "$MODE" != commit ] || record_unstaged "$1"
   for step in $STEPS; do
     if ! run_step "$step" "$1" "$2"; then
       say "$1" "the $step check failed; fix what it reports above, then commit again"
@@ -272,6 +377,8 @@ pipeline() { # kb mode
 for_each_knowledgebase() { # mode
   local kb status=0
   while IFS= read -r kb; do
+    # A commit checks only the knowledgebases it changes; kb-check covers them all.
+    if [ "$1" = commit ] && git diff --cached --quiet -- "$kb"; then continue; fi
     pipeline "$kb" "$1" || status=1
   done < <(knowledgebases)
   if [ "$1" = commit ] && [ -s "$STAGE" ]; then
@@ -296,6 +403,7 @@ stage() {
 
 diagrams() {
   local kb status=0
+  MODE=diagrams
   while IFS= read -r kb; do
     step_likec4 "$kb" diagrams || {
       say "$kb" "the LikeC4 export failed"
@@ -345,5 +453,3 @@ step) run_step "${2:?step}" "${3:?knowledgebase folder}" check ;;
   exit 2
   ;;
 esac
-    # A commit checks only the knowledgebases it changes; kb-check covers them all.
-    if [ "$1" = commit ] && git diff --cached --quiet -- "$kb"; then continue; fi

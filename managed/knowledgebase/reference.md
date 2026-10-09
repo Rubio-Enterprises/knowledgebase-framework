@@ -98,14 +98,15 @@ commit, including any prose that describes the diagram.
 
 The LikeC4 add-on keeps one LikeC4 project in `assets/likec4/`: `likec4.config.json` plus `.c4`
 files with the specification, the model and the views. Each view exports to `<view-id>.png` next
-to the `.c4` file that defines it.
+to the `.c4` file that defines it. Pictures the model embeds, such as icons, go in its `images/`
+folder.
 
-- **Exports are automatic.** Any commit that changes a `.c4` file formats and validates the model
-  and re-exports every view. `lefthook run kb-diagrams` does the same on demand.
+- **Exports are automatic.** Any commit that changes a `.c4` file formats and validates the model,
+  re-exports every view and deletes the PNG of any view that no longer exists. `lefthook run
+  kb-diagrams` does the same on demand.
 - **A dynamic view exports as a sequence diagram** when it declares `variant sequence`, and as a
   box diagram otherwise.
 - **Check a view's content in its computed JSON**, not by eyeballing a large PNG:
-  `mise x npm:likec4@1.59.4 -- likec4 export json -o .scratch/model.json assets/likec4`, then read
-  `.[0].views["<view-id>"].nodes` and `.edges` with `jq`.
-- **Browse the views live** with `mise x npm:likec4@1.59.4 -- likec4 serve assets/likec4`.
-- A view that you delete leaves its PNG behind: delete that file in the same commit.
+  `mise x node@24.21.0 npm:likec4@1.59.4 -- likec4 export json -o .scratch/model.json assets/likec4`,
+  then read `.[0].views["<view-id>"].nodes` and `.edges` with `jq`.
+- **Browse the views live** with `mise x node@24.21.0 npm:likec4@1.59.4 -- likec4 serve assets/likec4`.
