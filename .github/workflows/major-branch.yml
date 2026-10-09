@@ -42,12 +42,12 @@ jobs:
           branch="${TAG%%.*}"
           commit="$(git rev-parse --verify "refs/tags/$TAG^{commit}")"
           if ! git rev-parse --verify --quiet "refs/remotes/origin/$branch" >/dev/null; then
-            echo "::error::$branch doesn't exist. A new major's branch is created by hand, with its Migration file (ADR-0010)."
+            echo "::error::$branch doesn't exist; a new major's branch is created by hand (ADR-0010)."
             exit 1
           fi
           if git push origin "$commit:refs/heads/$branch"; then
             echo "::notice::$branch is at $TAG ($(git rev-parse --short "$commit"))"
           else
-            echo "::error::$branch can't fast-forward to $TAG; it has diverged or is ahead. Investigate before moving it."
+            echo "::error::$branch can't fast-forward to $TAG: it has diverged or is ahead."
             exit 1
           fi
