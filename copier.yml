@@ -1,0 +1,37 @@
+# Knowledgebase Framework: the Shell (ADR-0001). `copier copy --trust` creates a knowledgebase and
+# `copier update --trust -a .copier-answers.knowledgebase.yml` refreshes it. The Hooks reach knowledgebases separately, through lefthook.
+_min_copier_version: "9.15.0"
+_subdirectory: template
+_answers_file: .copier-answers.knowledgebase.yml
+_preserve_symlinks: true
+_templates_suffix: .jinja
+
+_tasks:
+  - command: ["bash", "{{ _copier_conf.src_path }}/shell/setup.sh", "{{ _copier_operation }}", "{{ scope }}"]
+
+# A major version that needs content converted adds a version-gated `_migrations` entry that leaves
+# MIGRATION-<version>.md in the knowledgebase (ADR-0010).
+_message_after_update: |
+  If this update left any MIGRATION-*.md files in the knowledgebase, have an agent complete them in
+  version order, then commit everything once.
+
+name:
+  type: str
+  help: The knowledgebase's name, the H1 of its README.md and AGENTS.md
+  validator: "{% if not name.strip() %}Give the knowledgebase a name.{% endif %}"
+
+scope:
+  type: str
+  help: Its scope, in one sentence ending with a full stop (the subjects it covers)
+  validator: "{% if not scope.strip() %}State the scope in one sentence.{% endif %}"
+
+related_knowledgebases:
+  type: str
+  multiline: true
+  default: ""
+  help: >-
+    Related knowledgebases (optional), one per line as `<path>: <its scope>`, the path relative to
+    this knowledgebase
+  validator: >-
+    {% for line in related_knowledgebases.splitlines() if line.strip() and ':' not in line %}Write
+    `{{ line.strip() }}` as `<path>: <its scope>`.{% endfor %}

@@ -26,8 +26,9 @@ re-export any LikeC4 diagrams that changed. Run the same checks any time with
 ### Updates
 
 The Hooks follow the framework's `v1` branch and pick up its changes within a day. When a commit
-prints a notice that this knowledgebase needs `copier update`, run `copier update --trust` in this
-folder, have an agent complete any `MIGRATION-*.md` file it leaves, and commit once.
+prints a notice that this knowledgebase needs `copier update`, run
+`copier update --trust -a .copier-answers.knowledgebase.yml` in this folder, have an agent complete
+any `MIGRATION-*.md` file it leaves, and commit once.
 
 ### Previewing in VS Code
 

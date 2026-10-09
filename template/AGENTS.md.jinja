@@ -1,0 +1,13 @@
+# {{ name }}
+
+{{ scope }}
+
+## Related knowledgebases
+
+{% for line in related_knowledgebases.splitlines() if line.strip() -%}
+{% set path, related_scope = line.split(':', 1) -%}
+- `{{ path.strip() }}`: {{ related_scope.strip() }} Its rules are in `{{ path.strip() }}/AGENTS.md`.
+{% else -%}
+None.
+{% endfor %}
+{% include 'managed/markers.txt' -%}

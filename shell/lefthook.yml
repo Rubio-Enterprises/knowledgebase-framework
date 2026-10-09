@@ -1,0 +1,15 @@
+# Knowledgebase Framework Hooks, fetched from the framework's v1 branch and refreshed every 24 hours.
+remotes:
+  - git_url: https://github.com/Rubio-Enterprises/knowledgebase-framework.git
+    ref: v1
+    refetch_frequency: 24h
+    configs:
+      - hooks/knowledgebase.yml
+
+pre-commit:
+  jobs:
+    # Lefthook skips remote Hooks it hasn't fetched, so block commits until they are cached.
+    - name: knowledgebase-hooks-fetched
+      run: >-
+        if ! test -f "$(git rev-parse --git-common-dir)/info/lefthook-remotes/knowledgebase-framework-v1/hooks/knowledgebase.yml";
+        then echo "Knowledgebase Hooks not fetched yet: go online and run 'lefthook install'"; exit 1; fi

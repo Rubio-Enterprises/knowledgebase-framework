@@ -8,6 +8,8 @@
 #   knowledgebase.sh regenerate <kb>       rewrite one knowledgebase's managed text (the Shell's Copier task)
 #   knowledgebase.sh step <step> <kb>      run one pipeline step on one knowledgebase (the framework's tests)
 #
+# Sourcing it instead defines the helpers and tool pins without running anything.
+#
 # A knowledgebase is any folder holding .copier-answers.knowledgebase.yml (ADR-0008). Every step
 # takes the knowledgebase's folder, never assumes the repository root, and stops the pipeline when
 # it fails. Runs from the repository root, on bash 3.2. Every tool is pinned below and reached
@@ -16,8 +18,9 @@ set -euo pipefail
 
 FRAMEWORK="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 ANSWERS_FILE=.copier-answers.knowledgebase.yml
-BEGIN_MARKER='<!-- BEGIN knowledgebase-framework managed block: edits here are replaced at the next commit -->'
-END_MARKER='<!-- END knowledgebase-framework managed block -->'
+# The managed block's markers, the same two lines the Shell writes into AGENTS.md and README.md.
+BEGIN_MARKER="$(sed -n 1p "$FRAMEWORK/managed/markers.txt")"
+END_MARKER="$(sed -n 2p "$FRAMEWORK/managed/markers.txt")"
 
 # --- Pinned tools -------------------------------------------------------------------------------
 # okf is built validator-only: its default `studio` feature doesn't compile on current rustc.
@@ -294,6 +297,7 @@ older_than() { # a b: is version a older than version b? Unparsable versions are
   local a b
   a="$(semver "$1")" b="$(semver "$2")"
   [ -n "$a" ] && [ -n "$b" ] || return 1
+  # shellcheck disable=SC2086 # split each version into its three numbers
   set -- $a $b
   [ "$1" -lt "$4" ] || { [ "$1" -eq "$4" ] && { [ "$2" -lt "$5" ] || { [ "$2" -eq "$5" ] && [ "$3" -lt "$6" ]; }; }; }
 }
@@ -304,11 +308,14 @@ notices() {
   while IFS= read -r kb; do
     shell="$(sed -nE "s/^_commit:[[:space:]]*['\"]?([^'\"]*)['\"]?[[:space:]]*$/\1/p" "$(at "$kb" "$ANSWERS_FILE")")"
     if older_than "$shell" "$wanted"; then
-      say "$kb" "its Shell ($shell) predates v$wanted. Run \`copier update --trust\` in it, then complete any MIGRATION-*.md it leaves before committing."
+      say "$kb" "its Shell ($shell) predates v$wanted. Run \`copier update --trust -a $ANSWERS_FILE\` in it, then complete any MIGRATION-*.md it leaves before committing."
     fi
   done < <(knowledgebases)
   return 0
 }
+
+# Sourced (by the Shell's Copier task) for its helpers and pins: stop here.
+[ "${BASH_SOURCE[0]}" = "$0" ] || return 0
 
 case "${1:-}" in
 pre-commit) for_each_knowledgebase commit ;;
