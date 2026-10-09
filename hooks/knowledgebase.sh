@@ -50,20 +50,15 @@ say() { printf 'knowledgebase %s: %s\n' "$([ "$1" = . ] && echo '(repository roo
 # A commit takes what is staged, so in a pre-commit run the Hooks stage only their own output and
 # never touch a file that holds unstaged changes. Before any step writes, each run records the files
 # under the knowledgebase that differ from the index: modified, deleted or untracked.
+#
+# Partly staged files never show up here: before pre-commit jobs run, lefthook hides their unstaged
+# hunks, and puts them back after the jobs. The Hooks may rewrite such a file, because the pre-commit
+# job sets `stage_fixed`: lefthook stages the files that were staged when the run began before it
+# puts the hunks back, and if a rewrite overlaps a hunk it stages nothing, restores every file and
+# fails the commit. That only works while the index is what it was when lefthook saved the hunks,
+# so the Hooks never stage those files themselves (see for_each_knowledgebase).
 record_unstaged() {
-  { git diff --name-only -- "$1" && git ls-files --others --exclude-standard -- "$1" && hidden_by_lefthook; } |
-    sort -u >"$WORK/unstaged"
-}
-
-# Before pre-commit jobs run, lefthook 2 hides the unstaged hunks of partly staged files and saves
-# them in .git/info/lefthook-unstaged.patch, so `git diff` can't see them. Those files hold unstaged
-# changes too, and a rewrite would stop lefthook putting the hunks back. Lefthook deletes the patch
-# once it has restored them, so only a patch from this commit's run (minutes old) counts.
-hidden_by_lefthook() {
-  local patch
-  patch="$(git rev-parse --git-path info/lefthook-unstaged.patch)"
-  [ -f "$patch" ] && [ -n "$(find "$patch" -mmin -10)" ] || return 0
-  sed -n 's#^diff --git a/\(.*\) b/.*#\1#p' "$patch"
+  { git diff --name-only -- "$1" && git ls-files --others --exclude-standard -- "$1"; } | sort -u >"$WORK/unstaged"
 }
 
 # Does path $1, or anything under it, hold unstaged changes? Only a pre-commit run asks.
@@ -376,13 +371,19 @@ pipeline() { # kb mode
 
 for_each_knowledgebase() { # mode
   local kb status=0
+  # The files lefthook's stage_fixed stages after this job: the same list, taken before any step
+  # writes. (Lefthook lists them again after the job, which only adds files this run staged.)
+  [ "$1" != commit ] || git diff --name-only --cached --diff-filter=ACMR >"$WORK/staged-at-start"
   while IFS= read -r kb; do
     # A commit checks only the knowledgebases it changes; kb-check covers them all.
     if [ "$1" = commit ] && git diff --cached --quiet -- "$kb"; then continue; fi
     pipeline "$kb" "$1" || status=1
   done < <(knowledgebases)
   if [ "$1" = commit ] && [ -s "$STAGE" ]; then
-    sort -u "$STAGE" | while IFS= read -r f; do stage "$f" || exit 1; done || status=1
+    # Stage what the run wrote, except the files lefthook stages: touching their index entries would
+    # stop lefthook putting back the hunks it hid (see record_unstaged).
+    comm -23 <(LC_ALL=C sort -u "$STAGE") <(LC_ALL=C sort -u "$WORK/staged-at-start") |
+      while IFS= read -r f; do stage "$f" || exit 1; done || status=1
   fi
   return "$status"
 }

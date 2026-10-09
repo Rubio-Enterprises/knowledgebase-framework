@@ -240,6 +240,19 @@ commit_fails() {
   check "$3" bash -c "printf '%s' \"\$1\" | grep -qF -- \"\$2\" && [ \"\$(git -C '$1' log -1 --format=%s)\" != 'docs: should not land' ]" _ "$out" "$2"
 }
 
+# The pass fixture's tracing document with its tags in flow style, which okf fmt rewrites.
+flow_style_tags() {
+  awk '/^tags:$/ {print "tags: [observability, tracing]"; skip = 1; next} skip && /^  - / {next} {skip = 0; print}' \
+    "$FW/tests/fixtures/pass/docs/about-tracing-tools.md"
+}
+
+# partly_staged_document <dir>: stage the flow-style tracing document, then add an unstaged paragraph.
+partly_staged_document() {
+  flow_style_tags >"$1/docs/about-tracing-tools.md"
+  git -C "$1" add docs/about-tracing-tools.md
+  printf '\nAn unstaged paragraph.\n' >>"$1/docs/about-tracing-tools.md"
+}
+
 group_unstaged() {
   local kb="$T/unstaged" out msg='has unstaged changes that the Hooks would overwrite or stage. Stage or stash them'
   [ -d "$T/root-likec4-true" ] || create "$T/root-likec4-true" -d likec4=true
@@ -263,23 +276,55 @@ group_unstaged() {
       git -C '$kb' diff --name-only | grep -qx README.md" || note "$out"
   git -C "$kb" checkout -q README.md
 
-  # okf fmt would normalize a staged document that also holds unstaged edits.
-  cp "$FW/tests/fixtures/pass/docs/about-tracing-tools.md" "$kb/docs/"
-  awk '/^tags:$/ {print "tags: [observability, tracing]"; skip = 1; next} skip && /^  - / {next} {skip = 0; print}' \
-    "$FW/tests/fixtures/pass/docs/about-tracing-tools.md" >"$kb/docs/about-tracing-tools.md"
-  git -C "$kb" add docs/about-tracing-tools.md
-  printf '\nAn unstaged paragraph.\n' >>"$kb/docs/about-tracing-tools.md"
-  cp "$kb/docs/about-tracing-tools.md" "$T/tracing.before"
-  commit_fails "$kb" "docs/about-tracing-tools.md $msg" "unstaged changes: okf fmt refuses a document with unstaged edits, naming it"
-  check "unstaged changes: the document is left exactly as it was" cmp -s "$T/tracing.before" "$kb/docs/about-tracing-tools.md"
-  # The same, with the unstaged edit on the very lines okf fmt rewrites: nothing may be lost.
+  # A partly staged document. Lefthook hides its unstaged hunks while the Hooks run: okf fmt
+  # normalizes the staged text (flow-style tags), lefthook stages that through stage_fixed, and the
+  # unstaged paragraph comes back, still unstaged.
+  partly_staged_document "$kb"
+  out="$(cd "$kb" && git commit -m "docs: add the tracing tools" 2>&1)"
+  check "unstaged changes: a partly staged document commits with okf fmt's rewrite" \
+    bash -c "[ \"\$(git -C '$kb' log -1 --format=%s)\" = 'docs: add the tracing tools' ] &&
+      git -C '$kb' show HEAD:docs/about-tracing-tools.md | grep -qx '  - tracing' &&
+      ! git -C '$kb' show HEAD:docs/about-tracing-tools.md | grep -q 'An unstaged paragraph'" || note "$out"
+  check "unstaged changes: its unstaged paragraph comes back, still unstaged" \
+    bash -c "git -C '$kb' diff -- docs/about-tracing-tools.md | grep -qx '+An unstaged paragraph.'"
   git -C "$kb" checkout -q docs/about-tracing-tools.md
+
+  # The unstaged edit on the very lines okf fmt rewrites: lefthook can't put it back, so it restores
+  # every file and stops the commit. Nothing is lost, and nothing unstaged is staged.
+  flow_style_tags >"$kb/docs/about-tracing-tools.md"
+  git -C "$kb" add docs/about-tracing-tools.md
+  git -C "$kb" show :docs/about-tracing-tools.md >"$T/tracing.staged"
   sed -i.bak 's/^tags: \[observability, tracing\]$/tags: [observability, tracing, apm]/' "$kb/docs/about-tracing-tools.md" &&
     rm "$kb/docs/about-tracing-tools.md.bak"
   cp "$kb/docs/about-tracing-tools.md" "$T/tracing.before"
-  commit_fails "$kb" "docs/about-tracing-tools.md $msg" "unstaged changes: an unstaged edit on the lines okf fmt rewrites is refused, naming the file"
+  commit_fails "$kb" "Unable to restore previously hidden unstaged changes" "unstaged changes: an unstaged edit on the lines okf fmt rewrites stops the commit"
   check "unstaged changes: that edit survives in the working tree" cmp -s "$T/tracing.before" "$kb/docs/about-tracing-tools.md"
-  git -C "$kb" reset -q docs/about-tracing-tools.md && rm "$kb/docs/about-tracing-tools.md"
+  check "unstaged changes: the staged text is left as it was" \
+    bash -c "git -C '$kb' show :docs/about-tracing-tools.md | cmp -s - '$T/tracing.staged'"
+  git -C "$kb" checkout -q HEAD -- docs/about-tracing-tools.md
+
+  # A staged file the Hooks delete: lefthook stages the deletion with the rest of the fixes.
+  printf 'mine\n' >"$kb/.knowledgebase/notes.md"
+  printf '\nA staged local note.\n' >>"$kb/README.md"
+  git -C "$kb" add .knowledgebase/notes.md README.md
+  out="$(cd "$kb" && git commit -m "docs: a staged stray file" 2>&1)"
+  check "unstaged changes: a staged file the Hooks delete stays out of the commit and the working tree" \
+    bash -c "[ \"\$(git -C '$kb' log -1 --format=%s)\" = 'docs: a staged stray file' ] &&
+      ! git -C '$kb' cat-file -e HEAD:.knowledgebase/notes.md 2>/dev/null && [ ! -e '$kb/.knowledgebase/notes.md' ] &&
+      [ -z \"\$(git -C '$kb' status --porcelain)\" ]" || note "$out"
+
+  # The partly staged commit again, from a linked worktree of the same repository.
+  local wt="$T/unstaged-worktree"
+  git -C "$kb" worktree add -q -b unstaged-worktree "$wt"
+  # Drop the document on the worktree's branch first, so the commit below adds it again.
+  git -C "$wt" rm -q docs/about-tracing-tools.md && git -C "$wt" commit -q --no-verify -m "docs: drop the tracing tools"
+  partly_staged_document "$wt"
+  out="$(cd "$wt" && git commit -m "docs: add the tracing tools again" 2>&1)"
+  check "unstaged changes: from a linked worktree, a partly staged document commits with the rewrite" \
+    bash -c "[ \"\$(git -C '$wt' log -1 --format=%s)\" = 'docs: add the tracing tools again' ] &&
+      git -C '$wt' show HEAD:docs/about-tracing-tools.md | grep -qx '  - tracing' &&
+      git -C '$wt' diff -- docs/about-tracing-tools.md | grep -qx '+An unstaged paragraph.'" || note "$out"
+  git -C "$kb" worktree remove --force "$wt"
 
   # A staged .c4 change with another, unstaged one: the export would not match the commit.
   sed -i.bak "s/title 'Landscape view'/title 'Landscape'/" "$kb/assets/likec4/views.c4" && rm "$kb/assets/likec4/views.c4.bak"

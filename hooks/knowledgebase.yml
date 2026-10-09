@@ -9,6 +9,9 @@ pre-commit:
     - name: knowledgebase
       script: knowledgebase.sh
       runner: bash
+      # Lefthook stages the already-staged files this job rewrites, before it puts back the
+      # unstaged hunks of partly staged files (hooks/knowledgebase.sh, record_unstaged).
+      stage_fixed: true
 
 # `lefthook run kb-check`: every check a commit runs, without staging anything.
 kb-check:
