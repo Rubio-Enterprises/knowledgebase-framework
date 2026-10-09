@@ -1,0 +1,53 @@
+# major-branch: the writer of the floating major branch (ADR-0004). Knowledgebases fetch the Hooks
+# from `v1`, so each v1.x release fast-forwards `v1` to the release's tag. The push is never forced:
+# git rejects a move that isn't a fast-forward, which is the safety we want (the same rule as
+# standards' channel-canary.yml). A new major's branch is created by hand, together with its
+# Migration file (ADR-0010), so this workflow never creates one.
+name: major-branch
+"on":
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to move its major branch to (vX.Y.Z)
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  # Serialize branch moves; never cancel one halfway.
+  group: major-branch
+  cancel-in-progress: false
+
+jobs:
+  fast-forward:
+    if: ${{ github.event_name == 'workflow_dispatch' || !github.event.release.prerelease }}
+    runs-on: ${{ fromJSON(vars.RUNNERS || '{}').light || fromJSON('["ubuntu-slim"]') }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - name: Fast-forward the major branch to the release tag
+        env:
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          set -euo pipefail
+          if ! printf '%s\n' "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::'$TAG' is not a release tag (vX.Y.Z)"
+            exit 1
+          fi
+          branch="${TAG%%.*}"
+          commit="$(git rev-parse --verify "refs/tags/$TAG^{commit}")"
+          if ! git rev-parse --verify --quiet "refs/remotes/origin/$branch" >/dev/null; then
+            echo "::error::$branch doesn't exist. A new major's branch is created by hand, with its Migration file (ADR-0010)."
+            exit 1
+          fi
+          if git push origin "$commit:refs/heads/$branch"; then
+            echo "::notice::$branch is at $TAG ($(git rev-parse --short "$commit"))"
+          else
+            echo "::error::$branch can't fast-forward to $TAG; it has diverged or is ahead. Investigate before moving it."
+            exit 1
+          fi

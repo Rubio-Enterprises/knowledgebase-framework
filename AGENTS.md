@@ -21,6 +21,8 @@ the decisions.
   text the knowledgebase owns, and a change next to a local edit conflicts.
 - **Anything that would fail an existing document is a new major** (ADR-0004), shipped with a
   Migration file where content needs converting (ADR-0010).
+- **Never move `v1` by hand.** `.github/workflows/major-branch.yml` fast-forwards it on each
+  release; a merged fix ships to every knowledgebase within 24 hours.
 - **Agent-facing text** (`managed/agents-block.md`, `managed/knowledgebase/*.md`) must earn every
   line (ADR-0007). Apply the writing-for-agents skill when editing it.
 
