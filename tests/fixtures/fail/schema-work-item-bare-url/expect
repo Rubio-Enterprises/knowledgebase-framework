@@ -1,0 +1,2 @@
+steps: schema
+message: $.work_item: 'https://github.com/example-org/example-service/issues/42' does not match

@@ -1,0 +1,2 @@
+steps: schema
+message: $.status: 'final' is not one of

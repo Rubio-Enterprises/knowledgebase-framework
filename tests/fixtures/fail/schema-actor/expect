@@ -1,0 +1,2 @@
+steps: schema
+message: $.generated.by: 'claude wrote this' does not match

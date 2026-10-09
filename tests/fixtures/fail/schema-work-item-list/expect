@@ -1,0 +1,2 @@
+steps: schema
+message: is not of type 'string'

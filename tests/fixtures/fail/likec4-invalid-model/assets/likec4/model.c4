@@ -1,0 +1,8 @@
+specification {
+  element system
+}
+
+model {
+  a = system 'A'
+  a -> missing 'calls an element that does not exist'
+}

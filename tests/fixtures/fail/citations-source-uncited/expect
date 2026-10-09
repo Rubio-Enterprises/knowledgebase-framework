@@ -1,0 +1,2 @@
+steps: lint citations
+message: source source-a is never cited

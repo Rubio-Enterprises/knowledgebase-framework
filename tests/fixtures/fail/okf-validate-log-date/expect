@@ -1,0 +1,2 @@
+steps: validate
+message: log date heading is not ISO-8601

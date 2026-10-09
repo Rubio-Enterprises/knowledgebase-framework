@@ -1,0 +1,2 @@
+steps: lint
+message: no top-level `#` heading

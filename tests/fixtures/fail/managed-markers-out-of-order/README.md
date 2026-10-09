@@ -1,0 +1,4 @@
+# Fixture
+
+<!-- END knowledgebase-framework managed block -->
+<!-- BEGIN knowledgebase-framework managed block: edits here are replaced at the next commit -->
