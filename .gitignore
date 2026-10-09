@@ -1,0 +1,3 @@
+.DS_Store
+# The template ships an empty .scratch/ folder, which a global .scratch/ ignore would hide.
+!template/.scratch/
