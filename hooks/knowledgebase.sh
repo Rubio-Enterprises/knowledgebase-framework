@@ -273,9 +273,23 @@ for_each_knowledgebase() { # mode
     pipeline "$kb" "$1" || status=1
   done < <(knowledgebases)
   if [ "$1" = commit ] && [ -s "$STAGE" ]; then
-    sort -u "$STAGE" | while IFS= read -r f; do git add -A -- "$f"; done
+    sort -u "$STAGE" | while IFS= read -r f; do stage "$f" || exit 1; done || status=1
   fi
   return "$status"
+}
+
+# Stage path $1. Lefthook may run other jobs in parallel (a host repository's formatters, say), so
+# wait out an index lock they hold instead of failing the commit.
+stage() {
+  local tries=0
+  until git add -A -- "$1" 2>"$WORK/add.err"; do
+    tries=$((tries + 1))
+    if [ "$tries" -ge 40 ] || ! grep 'index.lock' "$WORK/add.err" >/dev/null; then
+      cat "$WORK/add.err" >&2
+      return 1
+    fi
+    sleep 0.25
+  done
 }
 
 diagrams() {
