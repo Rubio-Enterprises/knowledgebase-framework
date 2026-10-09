@@ -1,0 +1,23 @@
+model {
+  customer = actor 'Customer' {
+    description 'The regular customer of the system'
+  }
+
+  saas = system 'Our SaaS' {
+    component ui 'Frontend' {
+      description 'The web application'
+      style {
+        shape browser
+      }
+    }
+    component backend 'Backend Services' {
+      description 'Implements business logic and exposes it as a REST API'
+    }
+
+    // The UI fetches data from the backend
+    ui -> backend 'fetches via HTTPS'
+  }
+
+  // The customer uses the UI
+  customer -> ui 'opens in browser'
+}

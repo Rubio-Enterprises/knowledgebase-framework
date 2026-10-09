@@ -5,6 +5,9 @@ _subdirectory: template
 _answers_file: .copier-answers.knowledgebase.yml
 _preserve_symlinks: true
 _templates_suffix: .jinja
+# The LikeC4 starter belongs to the knowledgebase once written: updates never touch it.
+_skip_if_exists:
+  - "assets/likec4/*"
 
 _tasks:
   - command: ["bash", "{{ _copier_conf.src_path }}/shell/setup.sh", "{{ _copier_operation }}", "{{ scope }}"]
@@ -35,3 +38,10 @@ related_knowledgebases:
   validator: >-
     {% for line in related_knowledgebases.splitlines() if line.strip() and ':' not in line %}Write
     `{{ line.strip() }}` as `<path>: <its scope>`.{% endfor %}
+
+likec4:
+  type: bool
+  default: true
+  help: >-
+    Add the LikeC4 add-on? It starts a diagram model in assets/likec4/, which every commit
+    validates and re-exports to PNG. (Later, creating or deleting assets/likec4/ turns it on or off.)

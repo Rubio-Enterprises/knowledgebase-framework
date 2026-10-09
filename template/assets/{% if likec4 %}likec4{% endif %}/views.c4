@@ -1,0 +1,14 @@
+views {
+  view index {
+    title 'Landscape view'
+    include *
+  }
+
+  view saas of saas {
+    include *
+
+    style customer {
+      color muted
+    }
+  }
+}

@@ -1,0 +1,6 @@
+// The kinds of elements in the model. Starter from LikeC4's tutorial: make it yours.
+specification {
+  element actor
+  element system
+  element component
+}

@@ -1,0 +1,5 @@
+{
+  "$schema": "https://likec4.dev/schemas/config.json",
+  "name": "{{ name | lower | regex_replace('[^a-z0-9]+', '-') | trim('-') }}",
+  "title": {{ name | tojson }}
+}
