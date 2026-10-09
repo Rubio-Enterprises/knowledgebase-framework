@@ -1,5 +1,6 @@
-# Knowledgebase Framework: the Shell (ADR-0001). `copier copy --trust` creates a knowledgebase and
-# `copier update --trust -a .copier-answers.knowledgebase.yml` refreshes it. The Hooks reach knowledgebases separately, through lefthook.
+# Knowledgebase Framework: the Shell (ADR-0001). `copier copy --trust` creates a knowledgebase;
+# `copier update --trust -a .copier-answers.knowledgebase.yml` refreshes it. The Hooks reach
+# knowledgebases separately, through lefthook.
 _min_copier_version: "9.15.0"
 _subdirectory: template
 _answers_file: .copier-answers.knowledgebase.yml
