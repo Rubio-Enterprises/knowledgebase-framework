@@ -1,0 +1,3 @@
+// These fixtures are knowledgebase documents, checked by the framework's Hooks under test and
+// deliberately broken in places, so markdownlint leaves them alone.
+{ "default": false }
