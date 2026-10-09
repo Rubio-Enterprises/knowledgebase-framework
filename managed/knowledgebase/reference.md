@@ -1,6 +1,14 @@
 # Reference
 
-Rules for rarer work in a knowledgebase. Read the section that matches the task in hand.
+Rules for rarer work in a knowledgebase. Read the section that matches the task in hand:
+
+- [Citing sources](#citing-sources)
+- [Source snapshots](#source-snapshots)
+- [Splitting and merging documents](#splitting-and-merging-documents)
+- [Settling a Plan](#settling-a-plan)
+- [Retiring a document](#retiring-a-document)
+- [Diagrams](#diagrams)
+- [LikeC4](#likec4)
 
 ## Citing sources
 
