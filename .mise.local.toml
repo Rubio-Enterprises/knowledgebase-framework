@@ -1,0 +1,4 @@
+# Repo-owned tasks (the standards template renders .mise.toml; this file is ours).
+[tasks.test]
+description = "The framework's end-to-end suite (needs git, mise, lefthook and copier)"
+run = "bash tests/run.sh"

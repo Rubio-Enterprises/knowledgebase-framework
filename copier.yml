@@ -11,7 +11,13 @@ _skip_if_exists:
   - "assets/likec4/*"
 
 _tasks:
-  - command: ["bash", "{{ _copier_conf.src_path }}/shell/setup.sh", "{{ _copier_operation }}", "{{ scope }}"]
+  - command:
+      [
+        "bash",
+        "{{ _copier_conf.src_path }}/shell/setup.sh",
+        "{{ _copier_operation }}",
+        "{{ scope }}",
+      ]
 
 # A major version that needs content converted adds a version-gated `_migrations` entry that leaves
 # MIGRATION-<version>.md in the knowledgebase (ADR-0010).

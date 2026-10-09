@@ -9,7 +9,14 @@
       "enum": ["How-to guide", "Reference", "Explanation", "Tutorial"]
     },
     "genre": {
-      "enum": ["Research", "Investigation", "Runbook", "Plan", "Decision", "Map"]
+      "enum": [
+        "Research",
+        "Investigation",
+        "Runbook",
+        "Plan",
+        "Decision",
+        "Map"
+      ]
     },
     "title": { "type": "string", "minLength": 1 },
     "description": { "type": "string", "minLength": 1 },
@@ -52,7 +59,15 @@
     },
     "stale_after": { "$ref": "#/$defs/instant" }
   },
-  "required": ["type", "genre", "title", "description", "tags", "status", "generated"],
+  "required": [
+    "type",
+    "genre",
+    "title",
+    "description",
+    "tags",
+    "status",
+    "generated"
+  ],
   "additionalProperties": false,
   "$defs": {
     "hyperlink": {
@@ -60,7 +75,10 @@
       "type": "string",
       "pattern": "^\\[[^\\[\\]\\n]+\\]\\(https?://[^\\s()]+\\)$"
     },
-    "actor": { "type": "string", "pattern": "^(human:[a-z0-9._-]+|process:.+|[^\\s/]+/[^\\s]+)$" },
+    "actor": {
+      "type": "string",
+      "pattern": "^(human:[a-z0-9._-]+|process:.+|[^\\s/]+/[^\\s]+)$"
+    },
     "instant": {
       "type": "string",
       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
