@@ -15,8 +15,9 @@ switch the ref and, where content must be converted, leave a Migration file (ADR
 ## Consequences
 
 - `v1` is a branch, not a tag, so it never competes with the release tags Copier reads for
-  `copier update`. Each v1.x release moves it forward. Org rulesets protect only the default branch,
-  so moving it needs no bypass.
+  `copier update`. Each v1.x release moves it forward: `.github/workflows/major-branch.yml`
+  fast-forwards it to the release's tag and never forces the push. Org rulesets protect only the
+  default branch, so moving it needs no bypass.
 - The Hooks announce any update that needs `copier update`, such as a new major or a Shell change
   they can't make themselves. They print a notice on each knowledgebase's next commit, so there is
   no inventory or polling.

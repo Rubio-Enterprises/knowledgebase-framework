@@ -70,8 +70,10 @@ that lints Markdown keeps linting everything else (ADR-0006).
 ## Versions
 
 - release-please tags each release `vX.Y.Z`; Copier creates and updates from those tags.
-- The `v1` branch moves forward with every v1.x release. The Hooks follow it, so fixes reach every
-  knowledgebase within 24 hours without anyone visiting it (ADR-0004).
+- The `v1` branch moves forward with every v1.x release: `.github/workflows/major-branch.yml`
+  fast-forwards it to the release's tag. The Hooks follow it, so fixes reach every knowledgebase
+  within 24 hours without anyone visiting it (ADR-0004). The workflow never creates a new major's
+  branch; that is created by hand, with its Migration file (ADR-0010).
 - A change the Hooks can't make themselves needs `copier update`. Raise `hooks/shell-version` to
   the release that carries it, and every knowledgebase created from an older Shell prints a notice
   on its next commit. To update one, run this in its folder:
