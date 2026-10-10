@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/Rubio-Enterprises/knowledgebase-framework/compare/v1.0.1...v1.1.0) (2026-10-10)
+
+
+### Features
+
+* keep knowledgebases free of scratch; unfinished knowledge is a draft ([#8](https://github.com/Rubio-Enterprises/knowledgebase-framework/issues/8)) ([0b2e305](https://github.com/Rubio-Enterprises/knowledgebase-framework/commit/0b2e305ec4a9d5011c6568263de8903210e7b028))
+
 ## [1.0.1](https://github.com/Rubio-Enterprises/knowledgebase-framework/compare/v1.0.0...v1.0.1) (2026-10-10)
 
 
