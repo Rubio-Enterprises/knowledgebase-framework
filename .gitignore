@@ -1,6 +1,4 @@
 .DS_Store
-# The template ships an empty .scratch/ folder, which a global .scratch/ ignore would hide.
-!template/.scratch/
 
 # >>> rubio-standards >>>
 # Managed by rubio-standards Copier template. Do not edit between sentinels —

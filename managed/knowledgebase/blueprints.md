@@ -15,7 +15,7 @@ title: <identical to the H1>
 description: <one sentence: what the document covers>
 tags:
   - <subject-tag>
-status: <stable, or draft for a Plan>
+status: <stable, or draft while it's still being shaped (a Plan stays draft until it settles)>
 work_item: "[<owner/repo#123>](<https://github.com/owner/repo/issues/123>)"  # optional
 generated:
   by: <producer>/<version>

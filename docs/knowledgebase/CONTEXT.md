@@ -95,7 +95,8 @@ Changing a Plan's `genre` and `status` (and `type` if its job changed) once its 
 answered, keeping the filename.
 _Avoid_: Graduating, moving to reference
 
-**Scratch folder**:
-A knowledgebase's hidden `.scratch/` folder, for anything not meant to become a permanent or
-semi-permanent document or asset.
-_Avoid_: Scratch repo, workbench, drafts
+**Draft**:
+A concept document with `status: draft`: knowledge still being shaped, kept in `docs/` and checked
+like any other. A knowledgebase has no scratch folder; working files that aren't knowledge live
+outside it (ADR-0011).
+_Avoid_: Scratch, work in progress folder

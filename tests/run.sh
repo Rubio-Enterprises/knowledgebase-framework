@@ -5,6 +5,7 @@
 # KB_TEST_VERBOSE=1 shows evidence lines; KB_TEST_KEEP=1 keeps the scratch folder.
 set -uo pipefail
 # shellcheck source=tests/lib.sh
+# shellcheck disable=SC1091 # lib.sh is linted on its own
 . "$(dirname "$0")/lib.sh"
 
 group_syntax() {
@@ -48,8 +49,8 @@ group_creation() {
     [ "$likec4" = false ] || expected="$(printf '%s\n%s\n' "$ROOT_FILES" "$LIKEC4_FILES" | LC_ALL=C sort)"
     check "root creation, likec4=$likec4: exactly the planned tree" \
       diff <(printf '%s\n' "$expected" | LC_ALL=C sort) <(tree_of "$kb")
-    check "root creation, likec4=$likec4: .scratch/ exists and git ignores it" \
-      bash -c "[ -d '$kb/.scratch' ] && git -C '$kb' check-ignore -q .scratch/x"
+    check "root creation, likec4=$likec4: no scratch folder (ADR-0011)" \
+      test ! -e "$kb/.scratch"
     check "root creation, likec4=$likec4: CLAUDE.md links to AGENTS.md" \
       test "$(readlink "$kb/CLAUDE.md")" = AGENTS.md
     check "root creation, likec4=$likec4: first commit made through the Hooks" \
@@ -402,12 +403,12 @@ EOF
   note "$(printf '%s\n' "$out" | strip_colors | grep -E '✔️|✘|seconds\)' | head -4)"
   check "likec4: a .c4 change commits through the Hooks" test "$(git -C "$kb" log -1 --format=%s)" = "docs: add checkout views"
   check "likec4: the commit formatted the .c4 file" \
-    bash -c "! cmp -s '$T/journeys.unformatted' '$kb/assets/likec4/journeys.c4' && cd '$kb' && mise x $NODE npm:likec4@1.59.4 -- likec4 format --check assets/likec4 >/dev/null 2>&1"
+    bash -c "! cmp -s '$T/journeys.unformatted' '$kb/assets/likec4/journeys.c4' && cd '$kb' && mise x '$NODE' npm:likec4@1.59.4 -- likec4 format --check assets/likec4 >/dev/null 2>&1"
   check "likec4: both views exported next to their sources and committed" \
     bash -c "git -C '$kb' cat-file -e HEAD:assets/likec4/checkout.png && git -C '$kb' cat-file -e HEAD:assets/likec4/checkout-boxes.png && [ -z \"\$(git -C '$kb' status --porcelain)\" ]"
   tmp="$T/likec4-reference"
-  (cd "$kb" && mise x $NODE npm:likec4@1.59.4 -- likec4 export png --flat -o "$tmp/seq" --seq -f checkout -f checkout-boxes assets/likec4 >/dev/null 2>&1 &&
-    mise x $NODE npm:likec4@1.59.4 -- likec4 export png --flat -o "$tmp/box" -f checkout -f checkout-boxes assets/likec4 >/dev/null 2>&1)
+  (cd "$kb" && mise x "$NODE" npm:likec4@1.59.4 -- likec4 export png --flat -o "$tmp/seq" --seq -f checkout -f checkout-boxes assets/likec4 >/dev/null 2>&1 &&
+    mise x "$NODE" npm:likec4@1.59.4 -- likec4 export png --flat -o "$tmp/box" -f checkout -f checkout-boxes assets/likec4 >/dev/null 2>&1)
   check "likec4: the view declared variant sequence exported as a sequence diagram" \
     bash -c "cmp -s '$kb/assets/likec4/checkout.png' '$tmp/seq/checkout.png' && ! cmp -s '$kb/assets/likec4/checkout.png' '$tmp/box/checkout.png'"
   check "likec4: the view without a variant exported as a box diagram" \
@@ -466,5 +467,6 @@ for g in ${*:-$ALL_GROUPS}; do
   printf '# %s\n' "$g"
   "group_$(printf '%s' "$g" | tr - _)"
 done
+# shellcheck disable=SC2153 # PASSED and FAILED are set by lib.sh
 printf '\n%d passed, %d failed\n' "$PASSED" "$FAILED"
 [ "$FAILED" -eq 0 ]
