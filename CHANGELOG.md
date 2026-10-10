@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/Rubio-Enterprises/knowledgebase-framework/compare/v1.0.0...v1.0.1) (2026-10-10)
+
+
+### Bug Fixes
+
+* **hooks:** let lefthook stage the partly staged files it hides ([#5](https://github.com/Rubio-Enterprises/knowledgebase-framework/issues/5)) ([a9f3016](https://github.com/Rubio-Enterprises/knowledgebase-framework/commit/a9f30164405d8dd172f1bf4c7f19e6e10a5c41d3))
+
 ## 1.0.0 (2026-10-09)
 
 
