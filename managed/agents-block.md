@@ -11,7 +11,10 @@ bundle and checked at every commit by the Knowledgebase Framework's Hooks.
   the live copy) → next to its document, as `docs/<document-name>.<ext>`.
 - **Asset** (a file documents embed or link that isn't a document: diagram sources and renders,
   images, exports) → `assets/`.
-- **Anything not meant to last** → `.scratch/`, which git ignores.
+- **A document you're still shaping** → `docs/<subject>.md` with `status: draft`, checked like
+  any other; it becomes `stable` once it settles.
+- **Anything that isn't knowledge** (working files, data dumps, prototypes) → outside the
+  knowledgebase, in your usual scratch space. The knowledgebase holds only documents and assets.
 - **A subject a related knowledgebase covers more narrowly** → that knowledgebase, under its own
   `AGENTS.md`. Every document goes to the narrowest knowledgebase whose scope covers it.
 

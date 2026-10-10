@@ -58,7 +58,7 @@ a sign-in, an emailed attachment), kept because tools can't fetch the live copy.
 
 - **Name it after the document it backs**, keeping the original extension:
   `docs/<document-name>.<ext>`, or `docs/<document-name>-<part>.<ext>` when there are several. A
-  file no document transcribes belongs in `.scratch/`.
+  file no document transcribes doesn't belong in the knowledgebase.
 - **The document carries the content.** The validator, the index, search and agents read
   Markdown, so every fact also appears in the document.
 - **Cite the live location** as the `sources` entry; its footnote also links the snapshot. `okf`
@@ -107,6 +107,6 @@ folder.
 - **A dynamic view exports as a sequence diagram** when it declares `variant sequence`, and as a
   box diagram otherwise.
 - **Check a view's content in its computed JSON**, not by eyeballing a large PNG:
-  `mise x node@24.21.0 npm:likec4@1.59.4 -- likec4 export json -o .scratch/model.json assets/likec4`,
+  `mise x node@24.21.0 npm:likec4@1.59.4 -- likec4 export json -o /tmp/model.json assets/likec4`,
   then read `.[0].views["<view-id>"].nodes` and `.edges` with `jq`.
 - **Browse the views live** with `mise x node@24.21.0 npm:likec4@1.59.4 -- likec4 serve assets/likec4`.

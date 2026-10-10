@@ -7,10 +7,11 @@ typed by its [Diátaxis](https://diataxis.fr) mode and its genre. Agents follow 
 ### Layout
 
 - `docs/`: the bundle. Every document sits here, flat, with any source snapshot next to it. Start
-  at the generated `docs/index.md`; `docs/log.md` records changes, newest first.
+  at the generated `docs/index.md`; `docs/log.md` records changes, newest first. A document
+  still being shaped is here too, with `status: draft`; working files that aren't knowledge live
+  outside the knowledgebase.
 - `assets/`: files the documents embed or link. With the LikeC4 add-on, `assets/likec4/` holds
   the model and the PNGs exported from it.
-- `.scratch/`: working files that aren't meant to last. Git ignores it.
 - `.knowledgebase/`: the framework's Blueprints, reference rules and preview stylesheet.
 - `AGENTS.md` and `README.md`: control documents. A managed block like this one belongs to the
   framework; the rest belongs to this knowledgebase.
