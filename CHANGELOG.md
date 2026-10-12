@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/Rubio-Enterprises/knowledgebase-framework/compare/v1.1.0...v2.0.0) (2026-10-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* documents with `status: deprecated`, and links to missing documents, now fail the commit. Run `copier update` and complete MIGRATION-2.0.0.md.
+
+### Features
+
+* delete retired documents instead of deprecating them ([596b615](https://github.com/Rubio-Enterprises/knowledgebase-framework/commit/596b6154955706b82e2192c5d21de43a641a779c))
+
 ## [1.1.0](https://github.com/Rubio-Enterprises/knowledgebase-framework/compare/v1.0.1...v1.1.0) (2026-10-10)
 
 
