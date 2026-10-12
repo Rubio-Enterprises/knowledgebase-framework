@@ -3,8 +3,8 @@
 #
 # Everything runs offline in a scratch folder ($T):
 #   $T/framework                      a throwaway copy of the framework: its baseline release tagged
-#                                     v1.0.0, then the working tree under test tagged v1.99.0, with
-#                                     a v1 branch at the working tree
+#                                     v1.0.0 with a v1 branch, then the working tree under test
+#                                     tagged v2.99.0 with a v2 branch, so updates cross a major
 #   $T/remote/knowledgebase-framework.git
 #                                     a bare clone that lefthook fetches the Hooks from
 #   $T/gitconfig                      the only git config the tests see; its `insteadOf` sends the
@@ -16,7 +16,8 @@ HOOKS_URL=https://github.com/Rubio-Enterprises/knowledgebase-framework.git
 # shellcheck disable=SC2034 # used by tests/run.sh
 NODE=node@24.21.0 # the node the Hooks pin, for running npm tools in tests
 BASELINE_TAG=v1.0.0
-NEW_TAG=v1.99.0
+NEW_TAG=v2.99.0
+HOOKS_REF=v2 # the major branch the working tree's Shell points at
 FAILED=0
 PASSED=0
 
@@ -83,10 +84,10 @@ EOF
 
   local fwrepo="$T/framework"
   export_tree "$(baseline_ref)" "$fwrepo"
-  (cd "$fwrepo" && git init -q && git add -A && git commit -q -m "baseline release" && git tag "$BASELINE_TAG")
+  (cd "$fwrepo" && git init -q && git add -A && git commit -q -m "baseline release" && git tag "$BASELINE_TAG" && git branch v1)
   (cd "$fwrepo" && git rm -rq . && git clean -fdxq)
   export_tree WORKTREE "$fwrepo"
-  (cd "$fwrepo" && git add -A && git commit -q --allow-empty -m "release under test" && git tag "$NEW_TAG" && git branch v1)
+  (cd "$fwrepo" && git add -A && git commit -q --allow-empty -m "release under test" && git tag "$NEW_TAG" && git branch "$HOOKS_REF")
   mkdir -p "$T/remote"
   git clone -q --bare "$fwrepo" "$T/remote/knowledgebase-framework.git"
   FRAMEWORK_REPO="$fwrepo"
@@ -111,7 +112,7 @@ create() {
 }
 
 # The knowledgebase's own fetched copy of the Hooks script.
-hooks_of() { printf '%s' "$(git -C "$1" rev-parse --path-format=absolute --git-common-dir)/info/lefthook-remotes/knowledgebase-framework-v1/hooks/knowledgebase.sh"; }
+hooks_of() { printf '%s' "$(git -C "$1" rev-parse --path-format=absolute --git-common-dir)/info/lefthook-remotes/knowledgebase-framework-$HOOKS_REF/hooks/knowledgebase.sh"; }
 
 # Copy the files of fixture overlay $1 over knowledgebase $2.
 overlay() { (cd "$1" && find . -type f ! -name expect | while IFS= read -r f; do

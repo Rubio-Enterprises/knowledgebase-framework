@@ -1,0 +1,2 @@
+steps: schema
+message: status deprecated was removed in v2; retire the document

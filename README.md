@@ -10,7 +10,7 @@ The framework reaches a knowledgebase in two parts (ADR-0001):
 - **The Shell**: the files Copier writes when the knowledgebase is created and refreshes on
   `copier update`.
 - **The Hooks**: the commit-time checks, schema and managed text, which every knowledgebase fetches
-  through lefthook from this repository's `v1` branch.
+  through lefthook from this repository's major branch (`v2`).
 
 Vocabulary: [`CONTEXT-MAP.md`](CONTEXT-MAP.md). Decisions: [`docs/adr/`](docs/adr/). Why the
 layout is what it is: [`docs/layout-rationale.md`](docs/layout-rationale.md).
@@ -70,8 +70,8 @@ that lints Markdown keeps linting everything else (ADR-0006).
 ## Versions
 
 - release-please tags each release `vX.Y.Z`; Copier creates and updates from those tags.
-- The `v1` branch moves forward with every v1.x release: `.github/workflows/major-branch.yml`
-  fast-forwards it to the release's tag. The Hooks follow it, so fixes reach every knowledgebase
+- The major branch (`v2`) moves forward with every v2.x release:
+  `.github/workflows/major-branch.yml` fast-forwards it to the release's tag. The Hooks follow it, so fixes reach every knowledgebase
   within 24 hours without anyone visiting it (ADR-0004). The workflow never creates a new major's
   branch; that is created by hand, with its Migration file (ADR-0010).
 - A change the Hooks can't make themselves needs `copier update`. Raise `hooks/shell-version` to
@@ -83,10 +83,16 @@ that lints Markdown keeps linting everything else (ADR-0006).
   ```
 
 - A change that would make existing documents fail (a renamed or removed vocabulary value, a new
-  required field, a stricter check with no auto-fix) is a new major. It ships as a `v2` branch and
-  a Copier release whose version-gated `_migrations` switch the `lefthook.yml` ref and, where
-  content needs converting, leave a `MIGRATION-<version>.md` for an agent (ADR-0010). Raising
-  `hooks/shell-version` on the `v1` branch announces it.
+  required field, a stricter check with no auto-fix) is a new major. Its `_migrations` entry in
+  `copier.yml` runs `shell/migrate.sh`, which switches a root knowledgebase's `lefthook.yml` ref
+  and leaves `shell/migrations/<version>.md` as `MIGRATION-<version>.md` for an agent
+  (ADR-0010). To release it:
+  1. Merge it with a `!` commit; release-please tags `vN.0.0`.
+  2. Create the `vN` branch at that tag by hand, the one branch move made by hand.
+  3. Announce it to the previous major: on a commit on top of its branch, raise
+     `hooks/shell-version` to `N.0.0`, tag it as that major's next patch, push the tag, and run
+     `major-branch.yml` with it, which fast-forwards the branch.
+  4. Point standards' `has_knowledgebase` facet at the new ref, for embedded knowledgebases.
 
 ## Develop the framework
 
@@ -109,7 +115,7 @@ bash tests/run.sh
 
 They take about two minutes, run offline once the pinned tools are cached, and run every script
 on `/bin/bash`, so they also prove bash 3.2 compatibility. They copy the working tree into a
-scratch folder as release `v1.99.0` on top of the last release (`v1.0.0`), serve the Hooks from a
+scratch folder as release `v2.99.0` on top of the last release (`v1.0.0`), serve the Hooks from a
 local bare clone that git's `insteadOf` substitutes for the GitHub URL, and then create, commit,
 break and update knowledgebases there. Pass group names to run a subset (`bash tests/run.sh
 fixtures likec4`); `KB_TEST_VERBOSE=1` prints the evidence behind each result and

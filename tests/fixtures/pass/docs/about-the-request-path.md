@@ -33,7 +33,8 @@ How a request travels from the browser to the backend. The diagram is an asset.
 ## 2. How they connect
 
 The router sends each request to one handler.[^router-source] See also
-[the measured latency](request-latency.md).
+[the measured latency](request-latency.md), itemized in
+[the inventory](request-latency.md#1-inventory).
 
 ## 3. Sources
 

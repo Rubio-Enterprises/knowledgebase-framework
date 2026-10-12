@@ -31,7 +31,7 @@ Every concept document opens with this frontmatter; the Hooks enforce it.
 - `title`: identical to the H1.
 - `description`: one sentence.
 - `tags`: kebab-case subject tags; the mode lives in `type` alone.
-- `status`: `draft`, `stable` or `deprecated`.
+- `status`: `draft` or `stable`.
 - `work_item` (optional): one quoted Markdown link to the parent issue or spec the document was
   written for, e.g. `"[owner/repo#123](https://github.com/owner/repo/issues/123)"`.
 - `generated`: `{by: <actor>, at: "<ISO-8601 instant>"}`. The actor is whoever produced the text:
@@ -49,7 +49,7 @@ Dates, status and authorship live in the frontmatter alone; the body starts at t
 - **Creating a document** → read `.knowledgebase/blueprints.md` and start from your genre's
   Blueprint.
 - **Citing a source, keeping a source snapshot, splitting, merging, settling or retiring a
-  document, or touching a diagram** → read the matching section of `.knowledgebase/reference.md`.
+  document (one that no longer holds), or touching a diagram** → read the matching section of `.knowledgebase/reference.md`.
 
 ### Recording changes
 

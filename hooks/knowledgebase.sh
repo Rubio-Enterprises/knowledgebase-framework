@@ -245,7 +245,14 @@ step_schema() {
     n=$((n + 1))
   done < <(concept_documents "$kb")
   [ "$n" -gt 0 ] || return 0
-  quiet check_jsonschema --schemafile "$FRAMEWORK/frontmatter.schema.json" "$out"/*.json
+  if ! quiet check_jsonschema --schemafile "$FRAMEWORK/frontmatter.schema.json" "$out"/*.json; then
+    # v2 removed `status: deprecated` (ADR-0012): name the way out, and the Migration file.
+    while IFS= read -r doc; do
+      [ "$(yq --front-matter=extract '.status // ""' "$doc")" != deprecated ] ||
+        echo "$doc: status deprecated was removed in v2; retire the document as .knowledgebase/reference.md describes (see MIGRATION-2.0.0.md if this knowledgebase has one)" >&2
+    done < <(concept_documents "$kb")
+    return 1
+  fi
 }
 
 # --- Step 6: citations -----------------------------------------------------------------------------
@@ -271,7 +278,27 @@ step_citations() {
   return "$status"
 }
 
-# --- Step 7: the LikeC4 add-on --------------------------------------------------------------------
+# --- Step 7: links (ADR-0012) -------------------------------------------------------------------
+# okf reports a link to a missing document only as information, and also lists links to files that
+# exist but aren't concept documents, such as source snapshots. Fail only when the file is missing.
+step_links() {
+  local kb=$1 docs id raw target status=0
+  docs="$(at "$kb" docs)"
+  okf links --json "$docs" >"$WORK/links.json" || return 1
+  while IFS="$(printf '\t')" read -r id raw; do
+    target="${raw%%#*}"
+    target="${target%%\?*}"
+    [ -n "$target" ] || continue
+    case "$target" in /*) ;; *) target="$docs/$(dirname "$id")/$target" ;; esac
+    if [ ! -e "$target" ]; then
+      echo "$docs/$id.md: links to $raw, which doesn't exist; point it at the document that replaced it, or remove it" >&2
+      status=1
+    fi
+  done < <(jq -r '.concepts[] | .id as $id | .links[] | select(.kind == "internal" and (.exists | not)) | [$id, .raw] | @tsv' "$WORK/links.json")
+  return "$status"
+}
+
+# --- Step 8: the LikeC4 add-on --------------------------------------------------------------------
 # Does the LikeC4 project in $1 have .c4 changes to act on in this mode?
 likec4_changed() {
   local dir=$1 mode=$2
@@ -344,11 +371,11 @@ step_likec4() {
 }
 
 # --- Pipeline ---------------------------------------------------------------------------------------
-STEPS="managed fmt index validate lint schema citations likec4"
+STEPS="managed fmt index validate lint schema citations links likec4"
 
 run_step() { # step kb mode
   case "$1" in
-  managed | index | validate | lint | schema | citations) "step_$1" "$2" ;;
+  managed | index | validate | lint | schema | citations | links) "step_$1" "$2" ;;
   fmt | likec4) "step_$1" "$2" "$3" ;;
   *)
     echo "unknown step: $1 (one of: $STEPS)" >&2

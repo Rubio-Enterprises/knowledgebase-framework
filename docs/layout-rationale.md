@@ -53,8 +53,13 @@ structure. Improve one document at a time; structure follows.
 ## Plans settle in place
 
 A Plan is `status: draft` while its question is open. When it settles, the same file changes
-`genre`, `status` and, if its job changed, `type`, so links never break. Superseded documents get
-`status: deprecated` and a link to their replacement.
+`genre`, `status` and, if its job changed, `type`, so links never break.
+
+## Retired documents are deleted
+
+A knowledgebase describes the current state, so a document that no longer holds is deleted, its
+links repointed at its replacement and the retirement logged (ADR-0012). A kept stub would only
+redirect links, which the Hooks check instead; git history keeps the old text.
 
 ## Filenames carry the subject only
 

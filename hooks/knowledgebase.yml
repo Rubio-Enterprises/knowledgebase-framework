@@ -1,5 +1,5 @@
 # Knowledgebase Framework Hooks. Knowledgebases fetch this file through lefthook `remotes` from the
-# framework's `v1` branch, refetched every 24 hours (ADR-0004). Each job runs a script from
+# framework's `v2` branch, refetched every 24 hours (ADR-0004). Each job runs a script from
 # .lefthook/<hook>/, which hands over to hooks/knowledgebase.sh.
 pre-commit:
   jobs:

@@ -19,8 +19,13 @@ _tasks:
         "{{ scope }}",
       ]
 
-# A major version that needs content converted adds a version-gated `_migrations` entry that leaves
-# MIGRATION-<version>.md in the knowledgebase (ADR-0010).
+# Each major version adds a version-gated `_migrations` entry: shell/migrate.sh points a root
+# knowledgebase at the new major's Hooks and leaves shell/migrations/<version>.md in it as
+# MIGRATION-<version>.md (ADR-0004, ADR-0010).
+_migrations:
+  - version: v2.0.0
+    command: ["bash", "{{ _copier_conf.src_path }}/shell/migrate.sh", "2.0.0"]
+
 _message_after_update: |
   If this update left any MIGRATION-*.md files in the knowledgebase, have an agent complete them in
   version order, then commit everything once.

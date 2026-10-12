@@ -29,7 +29,7 @@
         "not": { "enum": ["how-to", "reference", "explanation", "tutorial"] }
       }
     },
-    "status": { "enum": ["draft", "stable", "deprecated"] },
+    "status": { "enum": ["draft", "stable"] },
     "work_item": { "$ref": "#/$defs/hyperlink" },
     "generated": {
       "type": "object",

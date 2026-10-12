@@ -84,8 +84,16 @@ rewrite the body to the new genre's Blueprint. Links to it keep working.
 
 ## Retiring a document
 
-Set `status: deprecated` and link its replacement in the opening paragraph, or delete the file
-when nothing replaces it and nothing links to it. Record either in `docs/log.md` as `Retired`.
+Delete a document once it no longer describes how things are; update one that is only partly out
+of date instead. Before deleting, move any fact that still holds into the document that replaces it.
+Then:
+
+1. Point every link to it at its replacement, or remove the link when nothing replaces it. The
+   Hooks fail a commit that leaves a link to a missing document.
+2. Record it in `docs/log.md`:
+   `* **Retired**: old-name.md, replaced by [New title](new-name.md).`
+
+Git history keeps the old text.
 
 ## Diagrams
 

@@ -19,14 +19,14 @@ typed by its [Diátaxis](https://diataxis.fr) mode and its genre. Agents follow 
 ### Checks
 
 Every commit runs the framework's Hooks. They refresh the framework's text, normalize frontmatter,
-regenerate `docs/index.md`, validate and lint the bundle, check frontmatter and citations, and
-re-export any LikeC4 diagrams that changed. Run the same checks any time with
+regenerate `docs/index.md`, validate and lint the bundle, check frontmatter, citations and links,
+and re-export any LikeC4 diagrams that changed. Run the same checks any time with
 `lefthook run kb-check`, and re-export every diagram with `lefthook run kb-diagrams`. You need
 `git`, `lefthook` and `mise` on your PATH; the Hooks fetch their own pinned tools.
 
 ### Updates
 
-The Hooks follow the framework's `v1` branch and pick up its changes within a day. When a commit
+The Hooks follow the framework's `v2` branch and pick up its changes within a day. When a commit
 prints a notice that this knowledgebase needs `copier update`, run
 `copier update --trust -a .copier-answers.knowledgebase.yml` in this folder, have an agent complete
 any `MIGRATION-*.md` file it leaves, and commit once.

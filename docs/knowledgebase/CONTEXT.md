@@ -95,6 +95,11 @@ Changing a Plan's `genre` and `status` (and `type` if its job changed) once its 
 answered, keeping the filename.
 _Avoid_: Graduating, moving to reference
 
+**Retiring**:
+Deleting a concept document that no longer holds, after moving what still holds into its
+replacement, repointing links to it and logging it as `Retired` (ADR-0012).
+_Avoid_: Deprecating, archiving, superseding
+
 **Draft**:
 A concept document with `status: draft`: knowledge still being shaped, kept in `docs/` and checked
 like any other. A knowledgebase has no scratch folder; working files that aren't knowledge live

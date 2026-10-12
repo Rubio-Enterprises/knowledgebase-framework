@@ -136,7 +136,7 @@ pass_kb() {
   overlay "$FW/tests/fixtures/pass" "$PASS_KB"
 }
 
-STEPS="managed validate lint schema citations likec4"
+STEPS="managed validate lint schema citations links likec4"
 
 group_fixtures() {
   local step out d name expected message kb failed
@@ -190,11 +190,31 @@ group_update() {
     awk '{print} /^Fixture subjects\.$/ {print ""; print "Maintained by the fixture team."}' README.md >README.tmp &&
     mv README.tmp README.md &&
     git commit -qam "docs: local sections" >/dev/null 2>&1)
+  # A deprecated document and a link to it, valid under v1, for the v2 migration to retire.
+  sed 's/^status: stable$/status: deprecated/' "$FW/tests/fixtures/pass/docs/about-tracing-tools.md" >"$kb/docs/about-tracing-tools.md"
+  sed 's#^Use the tracing your platform already ships.$#See [About tracing tools](about-tracing-tools.md).#; s/^title: About tracing tools$/title: About tracing/; s/^\# About tracing tools$/\# About tracing/' \
+    "$FW/tests/fixtures/pass/docs/about-tracing-tools.md" >"$kb/docs/about-tracing.md"
+  out="$(cd "$kb" && git add -A && git commit -m "docs: a deprecated document" 2>&1)"
+  check "update: before v2, a deprecated document commits" test "$(git -C "$kb" log -1 --format=%s)" = "docs: a deprecated document" || note "$out"
   out="$(cd "$kb" && copier update --trust --defaults -a .copier-answers.knowledgebase.yml --vcs-ref "$NEW_TAG" 2>&1)"
   note "$(printf '%s\n' "$out" | strip_colors | grep -iE 'updating|version|MIGRATION|conflict' | head -5)"
   check "update: $BASELINE_TAG → $NEW_TAG records the new release" grep -q "^_commit: $NEW_TAG" "$kb/.copier-answers.knowledgebase.yml"
   check "update: local sections kept" bash -c "grep -q 'Local rule: keep every runbook under one page.' '$kb/AGENTS.md' && grep -q 'Maintained by the fixture team.' '$kb/README.md'"
   check "update: no merge conflicts" bash -c "! grep -rqE '^(<<<<<<<|>>>>>>>)' '$kb' --exclude-dir=.git && ! find '$kb' -name '*.rej' | grep . >/dev/null"
+  check "update: crossing v2 leaves MIGRATION-2.0.0.md" test -f "$kb/MIGRATION-2.0.0.md"
+  check "update: crossing v2 points lefthook.yml at the v2 Hooks" \
+    bash -c "grep -q '^    ref: v2$' '$kb/lefthook.yml' && grep -q 'knowledgebase-framework-v2\";' '$kb/lefthook.yml' && ! grep -q 'v1' '$kb/lefthook.yml'"
+  out="$(cd "$kb" && git add -A && git commit -m "chore: update the knowledgebase" 2>&1)"
+  check "update: the v2 Hooks block the deprecated document and name the way out" \
+    bash -c "printf '%s' \"\$1\" | grep -q 'docs/about-tracing-tools.md: status deprecated was removed in v2' && [ \"\$(git -C '$kb' log -1 --format=%s)\" != 'chore: update the knowledgebase' ]" _ "$out"
+  # Complete the migration the way MIGRATION-2.0.0.md says: retire the document, then delete the file.
+  rm "$kb/docs/about-tracing-tools.md"
+  out="$(cd "$kb" && git add -A && git commit -m "chore: update the knowledgebase" 2>&1)"
+  check "update: the v2 Hooks block a link to the retired document" \
+    bash -c "printf '%s' \"\$1\" | grep -q 'links to about-tracing-tools.md, which doesn.t exist' && [ \"\$(git -C '$kb' log -1 --format=%s)\" != 'chore: update the knowledgebase' ]" _ "$out"
+  sed -i.bak 's#^See \[About tracing tools\](about-tracing-tools.md).$#Use the tracing your platform already ships.#' "$kb/docs/about-tracing.md" && rm "$kb/docs/about-tracing.md.bak"
+  printf '* **Retired**: about-tracing-tools.md, replaced by [About tracing](about-tracing.md).\n' >>"$kb/docs/log.md"
+  rm "$kb/MIGRATION-2.0.0.md"
   out="$(cd "$kb" && git add -A && git commit -m "chore: update the knowledgebase" 2>&1)"
   check "update: the updated knowledgebase commits through the Hooks" test "$(git -C "$kb" log -1 --format=%s)" = "chore: update the knowledgebase" || note "$out"
   check "update: kb-check passes afterwards" bash -c "cd '$kb' && lefthook run kb-check >/dev/null"
@@ -452,7 +472,7 @@ group_notices() {
   local kb="$T/notices" out
   [ -d "$T/root-likec4-false" ] || create "$T/root-likec4-false" -d likec4=false
   cp -R "$T/root-likec4-false" "$kb"
-  printf '9.0.0\n' >"$(git -C "$kb" rev-parse --path-format=absolute --git-common-dir)/info/lefthook-remotes/knowledgebase-framework-v1/hooks/shell-version"
+  printf '9.0.0\n' >"$(git -C "$kb" rev-parse --path-format=absolute --git-common-dir)/info/lefthook-remotes/knowledgebase-framework-$HOOKS_REF/hooks/shell-version"
   printf 'note\n' >"$kb/assets/note.txt"
   out="$(cd "$kb" && git add -A && git commit -m "docs: a note" 2>&1)"
   note "$(printf '%s\n' "$out" | strip_colors | grep 'predates')"
