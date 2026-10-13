@@ -1,7 +1,8 @@
-# Knowledgebase Framework
+# Knowledgebase Framework (knowledgebase-framework)
 
-The conventions, checks and agent guidance that every knowledgebase is built on. A knowledgebase is
-a folder of settled knowledge, kept as an [OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format)
+The conventions, checks and agent guidance that every knowledgebase is built on.
+
+A knowledgebase is a folder of settled knowledge, kept as an [OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format)
 bundle and typed by [Diátaxis](https://diataxis.fr) mode and genre. It can be a whole git
 repository or a folder inside one.
 
@@ -15,7 +16,18 @@ The framework reaches a knowledgebase in two parts (ADR-0001):
 Vocabulary: [`CONTEXT-MAP.md`](CONTEXT-MAP.md). Decisions: [`docs/adr/`](docs/adr/). Why the
 layout is what it is: [`docs/layout-rationale.md`](docs/layout-rationale.md).
 
-## Requirements
+## Table of Contents
+
+- [Install](#install)
+- [Usage](#usage)
+- [Versions](#versions)
+- [Develop the framework](#develop-the-framework)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Install
+
+### Dependencies
 
 - `git`, `mise`, `lefthook` and `copier` (9.15 or later) on your PATH. Nothing else: the Hooks
   fetch every tool they use through `mise x`, including the node that likec4 and Playwright run
@@ -26,7 +38,7 @@ layout is what it is: [`docs/layout-rationale.md`](docs/layout-rationale.md).
   first use (okf is compiled from source, which took 13 seconds on an M-series Mac), and the LikeC4 add-on
   downloads Playwright's headless Chromium.
 
-## Create a knowledgebase
+### Create a knowledgebase
 
 ```sh
 copier copy --trust gh:Rubio-Enterprises/knowledgebase-framework <folder>
@@ -42,7 +54,7 @@ commits until the Hooks are fetched), installs the hooks, runs every check once 
 tools, and makes the first commit. It also adds the preview stylesheet and the Markdown Footnotes
 extension to `.vscode/`, and prints a line for the `AGENTS.md` of any workspace above the folder.
 
-## Embed a knowledgebase in a repository
+### Embed a knowledgebase in a repository
 
 Run the same command with a `<folder>` inside an existing repository. The knowledgebase gets its
 own control documents, but no `lefthook.yml` and no commit, because those belong to the
@@ -60,7 +72,14 @@ repository can hold several knowledgebases; the Hooks find each by its
 A knowledgebase opts itself out of markdownlint with its own `.markdownlint.jsonc`, so a repository
 that lints Markdown keeps linting everything else (ADR-0006).
 
-## Work in a knowledgebase
+## Usage
+
+Run the checks or re-export diagrams from a knowledgebase's repository:
+
+```sh
+lefthook run kb-check
+lefthook run kb-diagrams
+```
 
 - Agents read the knowledgebase's `AGENTS.md`, which points them at `.knowledgebase/blueprints.md`
   and `.knowledgebase/reference.md` when they need them (ADR-0007).
@@ -113,10 +132,32 @@ Run the tests with:
 bash tests/run.sh
 ```
 
-They take about two minutes, run offline once the pinned tools are cached, and run every script
-on `/bin/bash`, so they also prove bash 3.2 compatibility. They copy the working tree into a
-scratch folder as release `v2.99.0` on top of the last release (`v1.0.0`), serve the Hooks from a
-local bare clone that git's `insteadOf` substitutes for the GitHub URL, and then create, commit,
-break and update knowledgebases there. Pass group names to run a subset (`bash tests/run.sh
+The suite runs offline once the pinned tools are cached and runs scripts on `/bin/bash` on macOS,
+so it checks bash 3.2 compatibility there. It copies the working tree into a
+scratch folder as release `v2.99.0` on top of the latest release (retagged `v1.0.0`
+for the test), serves the Hooks from a local bare clone that git's `insteadOf`
+substitutes for the GitHub URL, and then creates, commits, breaks and updates
+knowledgebases there. Pass group names to run a subset (`bash tests/run.sh
 fixtures likec4`); `KB_TEST_VERBOSE=1` prints the evidence behind each result and
 `KB_TEST_KEEP=1` keeps the scratch folder.
+
+## Contributing
+
+This is a private Rubio-Enterprises repository. Collaborators can ask questions in
+[repository issues](https://github.com/Rubio-Enterprises/knowledgebase-framework/issues) and submit changes through pull requests.
+Follow [.github/PULL_REQUEST_TEMPLATE.md](.github/PULL_REQUEST_TEMPLATE.md): use a
+Conventional Commits title, link the work item, and complete What?, Why?, How?, and
+Testing? (plus the template's relevant review and dependency sections). Keep the
+body within 400 words and run the repository checks before requesting review.
+
+```bash
+mise run test
+mise exec -- markdownlint-cli2 README.md
+```
+
+See [AGENTS.md](AGENTS.md) for invariants and test-fixture requirements. `mise run test`
+wraps `bash tests/run.sh`; this repository has no `lint` or `typecheck` task.
+
+## License
+
+[MIT](LICENSE) — Copyright (c) 2026 Rubio Enterprises.
