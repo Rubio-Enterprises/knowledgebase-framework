@@ -24,7 +24,7 @@ concurrency:
 jobs:
   fast-forward:
     if: ${{ github.event_name == 'workflow_dispatch' || !github.event.release.prerelease }}
-    runs-on: ${{ fromJSON(vars.RUNNERS || '{}').light || fromJSON('["ubuntu-slim"]') }}
+    runs-on: ${{ fromJSON(vars.RUNNERS || '{}').small || fromJSON('["ubuntu-slim"]') }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
