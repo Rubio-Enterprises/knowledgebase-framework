@@ -1,4 +1,23 @@
 # Repo-owned tasks (the standards template renders .mise.toml; this file is ours).
+
+# The Hooks reach each tool through `mise x` at the version hooks/knowledgebase.sh pins, and
+# `mise x` downloads a tool on first use. Calling each one here installs those exact pins, so
+# `mise run test` runs offline. okf compiles from source, so its first install needs Rust.
+[tasks."setup:hook-tools"]
+description = "Install the tools the Hooks pin, and Chromium for likec4's PNG export"
+depends = ["setup:tools"]
+shell = "bash -c"
+run = '''
+set -euo pipefail
+. hooks/knowledgebase.sh
+mise x rust@1.99.1 -- bash -c '. hooks/knowledgebase.sh && okf --version'
+yq --version
+jq --version
+check_jsonschema --version
+likec4 --version
+playwright install --with-deps chromium-headless-shell
+'''
+
 [tasks.test]
-description = "The framework's end-to-end suite (needs git, mise, lefthook and copier)"
+description = "The framework's end-to-end suite (offline after mise run setup)"
 run = "bash tests/run.sh"

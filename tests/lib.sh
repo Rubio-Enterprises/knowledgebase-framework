@@ -10,6 +10,9 @@
 #   $T/gitconfig                      the only git config the tests see; its `insteadOf` sends the
 #                                     Shell's real Hooks URL to the bare clone. This is the tests'
 #                                     only override: the Shell itself always names the real URL.
+#                                     It also trusts the framework checkout, which a Dev Container
+#                                     mounts with another owner (the system config that would
+#                                     trust it is hidden).
 
 FW="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 HOOKS_URL=https://github.com/Rubio-Enterprises/knowledgebase-framework.git
@@ -78,6 +81,8 @@ setup_world() {
   gpgsign = false
 [url "file://$T/remote/knowledgebase-framework.git"]
   insteadOf = $HOOKS_URL
+[safe]
+  directory = $FW
 EOF
   export GIT_CONFIG_GLOBAL="$T/gitconfig" GIT_CONFIG_NOSYSTEM=1
   export LEFTHOOK_COLORS=false NO_COLOR=1
