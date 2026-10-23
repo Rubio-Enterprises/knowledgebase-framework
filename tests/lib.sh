@@ -54,9 +54,10 @@ export_tree() {
   fi
 }
 
-# The baseline release: the newest v1 release in the history, found by its release-please commit,
-# so that the update crosses into v2. Tags can't find it: a fresh clone may have none, and the
-# newest tag is already a v2 release.
+# The baseline release: the newest v1 release in HEAD's history, found by its release-please
+# commit, so that the update crosses into v2. It ignores tags and the v1 branch, so every clone
+# tests the same baseline: a fresh single-branch clone has neither, and the newest tag is already
+# a v2 release. Maintenance releases made on the v1 branch are not the baseline.
 baseline_ref() {
   git -C "$FW" log -1 --format=%H -E --grep='^chore\(main\): release 1\.'
 }
