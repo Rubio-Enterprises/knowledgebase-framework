@@ -10,6 +10,9 @@
 #   $T/gitconfig                      the only git config the tests see; its `insteadOf` sends the
 #                                     Shell's real Hooks URL to the bare clone. This is the tests'
 #                                     only override: the Shell itself always names the real URL.
+#                                     It also trusts the framework checkout, which a Dev Container
+#                                     mounts with another owner (the system config that would
+#                                     trust it is hidden).
 
 FW="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 HOOKS_URL=https://github.com/Rubio-Enterprises/knowledgebase-framework.git
@@ -51,11 +54,12 @@ export_tree() {
   fi
 }
 
-# The baseline release: the newest v* tag, or before the first release, the commit that created
-# the Shell.
+# The baseline release: the newest v1 release in HEAD's history, found by its release-please
+# commit, so that the update crosses into v2. It ignores tags and the v1 branch, so every clone
+# tests the same baseline: a fresh single-branch clone has neither, and the newest tag is already
+# a v2 release. Maintenance releases made on the v1 branch are not the baseline.
 baseline_ref() {
-  git -C "$FW" describe --tags --abbrev=0 --match 'v*' 2>/dev/null ||
-    git -C "$FW" log --diff-filter=A --format=%H -- copier.yml | tail -1
+  git -C "$FW" log -1 --format=%H -E --grep='^chore\(main\): release 1\.'
 }
 
 setup_world() {
@@ -78,6 +82,8 @@ setup_world() {
   gpgsign = false
 [url "file://$T/remote/knowledgebase-framework.git"]
   insteadOf = $HOOKS_URL
+[safe]
+  directory = $FW
 EOF
   export GIT_CONFIG_GLOBAL="$T/gitconfig" GIT_CONFIG_NOSYSTEM=1
   export LEFTHOOK_COLORS=false NO_COLOR=1
