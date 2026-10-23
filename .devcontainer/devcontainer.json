@@ -15,7 +15,8 @@
         "index.crates.io",
         "static.crates.io",
         "cdn.playwright.dev",
-        "playwright.download.prss.microsoft.com"
+        "playwright.download.prss.microsoft.com",
+        "storage.googleapis.com"
       ]
     }
   },
