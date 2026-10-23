@@ -1,8 +1,8 @@
 {
-  "name": "Rubio Dev Container",
+  "name": "knowledgebase-framework",
   "image": "mcr.microsoft.com/devcontainers/base:2.2.1-trixie",
   "features": {
     "ghcr.io/rubio-enterprises/devcontainer-features/baseline:3.0.0": {}
   },
-  "waitFor": "postCreateCommand"
+  "updateContentCommand": "mise run setup"
 }
