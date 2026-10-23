@@ -54,11 +54,11 @@ export_tree() {
   fi
 }
 
-# The baseline release: the newest v* tag, or before the first release, the commit that created
-# the Shell.
+# The baseline release: the newest v1 release in the history, found by its release-please commit,
+# so that the update crosses into v2. Tags can't find it: a fresh clone may have none, and the
+# newest tag is already a v2 release.
 baseline_ref() {
-  git -C "$FW" describe --tags --abbrev=0 --match 'v*' 2>/dev/null ||
-    git -C "$FW" log --diff-filter=A --format=%H -- copier.yml | tail -1
+  git -C "$FW" log -1 --format=%H -E --grep='^chore\(main\): release 1\.'
 }
 
 setup_world() {

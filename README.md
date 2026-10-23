@@ -132,9 +132,11 @@ Run the tests with:
 bash tests/run.sh
 ```
 
-The suite runs offline once the pinned tools are cached and runs scripts on `/bin/bash` on macOS,
+The suite runs offline once the pinned tools are cached: `mise run setup` installs them, with a
+Rust toolchain to build okf and Playwright's headless Chromium, and the Dev Container runs it on
+create. It runs scripts on `/bin/bash` on macOS,
 so it checks bash 3.2 compatibility there. It copies the working tree into a
-scratch folder as release `v2.99.0` on top of the latest release (retagged `v1.0.0`
+scratch folder as release `v2.99.0` on top of the latest v1 release (retagged `v1.0.0`
 for the test), serves the Hooks from a local bare clone that git's `insteadOf`
 substitutes for the GitHub URL, and then creates, commits, breaks and updates
 knowledgebases there. Pass group names to run a subset (`bash tests/run.sh
