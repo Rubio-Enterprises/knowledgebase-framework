@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/Rubio-Enterprises/knowledgebase-framework/compare/v2.0.0...v2.0.1) (2026-10-26)
+
+
+### Bug Fixes
+
+* **hooks:** bring okf's rust toolchain and run pins with lockfiles off ([#39](https://github.com/Rubio-Enterprises/knowledgebase-framework/issues/39)) ([4a2e226](https://github.com/Rubio-Enterprises/knowledgebase-framework/commit/4a2e226870453c14353d1b268cca9cb325964f28))
+
 ## [2.0.0](https://github.com/Rubio-Enterprises/knowledgebase-framework/compare/v1.1.0...v2.0.0) (2026-10-12)
 
 
