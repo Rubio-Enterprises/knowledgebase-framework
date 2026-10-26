@@ -126,5 +126,14 @@ overlay() { (cd "$1" && find . -type f ! -name expect | while IFS= read -r f; do
   cp "$f" "$2/$f"
 done); }
 
+# Run a command as on a bare machine: only bash 3.2, git, mise and lefthook on PATH, and no global
+# mise config.
+bare() {
+  mkdir -p "$T/bare-bin"
+  ln -sf "$(command -v git)" "$(command -v mise)" "$(command -v lefthook)" "$T/bare-bin/"
+  : >"$T/empty-mise.toml"
+  PATH="$T/bin:$T/bare-bin:/usr/bin:/bin" MISE_GLOBAL_CONFIG_FILE="$T/empty-mise.toml" "$@"
+}
+
 # Every file in repository $1 that git tracks or would track, sorted.
 tree_of() { git -C "$1" ls-files -co --exclude-standard | LC_ALL=C sort; }
