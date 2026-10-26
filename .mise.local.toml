@@ -2,7 +2,7 @@
 
 # The Hooks reach each tool through `mise x` at the version hooks/knowledgebase.sh pins, and
 # `mise x` downloads a tool on first use. Calling each one here installs those exact pins, so
-# `mise run test` runs offline. okf compiles from source, so its first install needs Rust.
+# `mise run test` runs offline. okf's pin brings the Rust toolchain that compiles it.
 [tasks."setup:hook-tools"]
 description = "Install the tools the Hooks pin, and Chromium for likec4's PNG export"
 depends = ["setup:tools"]
@@ -10,7 +10,7 @@ shell = "bash -c"
 run = '''
 set -euo pipefail
 . hooks/knowledgebase.sh
-mise x rust@1.99.1 -- bash -c '. hooks/knowledgebase.sh && okf --version'
+okf --version
 yq --version
 jq --version
 check_jsonschema --version

@@ -23,8 +23,10 @@ BEGIN_MARKER="$(sed -n 1p "$FRAMEWORK/managed/markers.txt")"
 END_MARKER="$(sed -n 2p "$FRAMEWORK/managed/markers.txt")"
 
 # --- Pinned tools -------------------------------------------------------------------------------
-# okf is built validator-only: its default `studio` feature doesn't compile on current rustc.
-okf() { mise x 'cargo:okf[default-features=false,features=validator]@0.2.7' -- okf "$@"; }
+# okf is built validator-only: its default `studio` feature doesn't compile on current rustc. It
+# has no release binaries, so its request brings the Rust toolchain that compiles it.
+RUST='rust[profile=minimal]@1.99.1'
+okf() { mise x "$RUST" 'cargo:okf[default-features=false,features=validator]@0.2.7' -- okf "$@"; }
 yq() { mise x aqua:mikefarah/yq@4.53.6 -- yq "$@"; }
 jq() { mise x aqua:jqlang/jq@1.8.2 -- jq "$@"; }
 check_jsonschema() { mise x pipx:check-jsonschema@0.37.4 -- check-jsonschema "$@"; }
