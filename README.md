@@ -33,6 +33,8 @@ layout is what it is: [`docs/layout-rationale.md`](docs/layout-rationale.md).
   Xcode's Command Line Tools or build-essential) for compiling okf. Nothing else: the Hooks fetch
   every tool they use through `mise x`, including the node that likec4 and Playwright run on and
   the Rust toolchain that compiles okf.
+- Nothing for mise's `locked` setting: the Hooks carry no lockfile, so they run their pinned tools
+  with lockfiles off, neither required nor written. Everything else stays locked.
 - Read access to `Rubio-Enterprises/knowledgebase-framework` through your git credentials: lefthook
   fetches the Hooks over HTTPS.
 - A network connection the first time. The Hooks download their pinned tools through `mise x` on

@@ -23,19 +23,23 @@ BEGIN_MARKER="$(sed -n 1p "$FRAMEWORK/managed/markers.txt")"
 END_MARKER="$(sed -n 2p "$FRAMEWORK/managed/markers.txt")"
 
 # --- Pinned tools -------------------------------------------------------------------------------
+# Pins run with mise's lockfiles off, neither required nor written. The Hooks carry no lockfile,
+# mise holds every tool named on the command line to a user's `locked` setting whatever its
+# `locked_scopes`, and an unlocked install rewrites every lockfile in scope, the global one too.
+pinned() { MISE_LOCKED=0 MISE_LOCKFILE=0 mise x "$@"; }
 # okf is built validator-only: its default `studio` feature doesn't compile on current rustc. It
 # has no release binaries, so its request brings the Rust toolchain that compiles it.
 RUST='rust[profile=minimal]@1.99.1'
-okf() { mise x "$RUST" 'cargo:okf[default-features=false,features=validator]@0.2.7' -- okf "$@"; }
-yq() { mise x aqua:mikefarah/yq@4.53.6 -- yq "$@"; }
-jq() { mise x aqua:jqlang/jq@1.8.2 -- jq "$@"; }
-check_jsonschema() { mise x pipx:check-jsonschema@0.37.4 -- check-jsonschema "$@"; }
+okf() { pinned "$RUST" 'cargo:okf[default-features=false,features=validator]@0.2.7' -- okf "$@"; }
+yq() { pinned aqua:mikefarah/yq@4.53.6 -- yq "$@"; }
+jq() { pinned aqua:jqlang/jq@1.8.2 -- jq "$@"; }
+check_jsonschema() { pinned pipx:check-jsonschema@0.37.4 -- check-jsonschema "$@"; }
 # The npm tools carry their own node, so no global node is needed.
 NODE=node@24.21.0
-likec4() { mise x "$NODE" npm:likec4@1.59.4 -- likec4 "$@"; }
+likec4() { pinned "$NODE" npm:likec4@1.59.4 -- likec4 "$@"; }
 # Keep in step with the Playwright that likec4 bundles (1.60.0 for likec4 1.59.4): it installs the
 # Chromium revision likec4's PNG export looks for, which likec4 never downloads itself.
-playwright() { mise x "$NODE" npm:playwright@1.60.0 -- playwright "$@"; }
+playwright() { pinned "$NODE" npm:playwright@1.60.0 -- playwright "$@"; }
 
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT

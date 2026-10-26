@@ -149,6 +149,12 @@ group_fixtures() {
     bash -c "[ \"\$(git -C '$PASS_KB' log -1 --format=%s)\" = 'docs: add the must-pass fixture' ] &&
       [ \"\$(git -C '$PASS_KB' show HEAD:docs/index.md | grep -c '^\* \[')\" = 6 ] && [ -z \"\$(git -C '$PASS_KB' status --porcelain)\" ]" ||
     note "$out"
+  # A user's locked mise whose config pins one of the Hooks' tools with no lock entry, on a bare
+  # PATH: the Hooks carry no lockfile and bring every tool they run.
+  printf '[tools]\n"aqua:mikefarah/yq" = "4.53.6"\n' >"$T/locked-mise.toml"
+  check "must-pass fixture: kb-check passes under a locked mise, with only git, mise and lefthook on PATH" \
+    bare env MISE_LOCKED=1 MISE_GLOBAL_CONFIG_FILE="$T/locked-mise.toml" \
+    bash -c "cd '$PASS_KB' && lefthook run kb-check && [ -z \"\$(git status --porcelain)\" ]"
 
   # Each must-fail fixture names, in tests/fixtures/fail/<name>/expect, the steps that enforce its
   # rule (usually one; the commit stops at the first) and a message one of them reports.
@@ -448,12 +454,8 @@ EOF
   check "likec4: PNGs in images/ are left alone" git -C "$kb" cat-file -e HEAD:assets/likec4/images/logo.png
 
   # No node on PATH and no global mise config: the Hooks bring their own node.
-  mkdir -p "$T/bare-bin"
-  ln -sf "$(command -v git)" "$(command -v mise)" "$(command -v lefthook)" "$T/bare-bin/"
-  : >"$T/empty-mise.toml"
   rm "$kb/assets/likec4/index.png"
-  out="$(cd "$kb" && PATH="$T/bin:$T/bare-bin:/usr/bin:/bin" MISE_GLOBAL_CONFIG_FILE="$T/empty-mise.toml" \
-    bash -c '! command -v node >/dev/null && lefthook run kb-diagrams' 2>&1)"
+  out="$(cd "$kb" && bare bash -c '! command -v node >/dev/null && lefthook run kb-diagrams' 2>&1)"
   check "likec4: kb-diagrams runs with no node on PATH" \
     bash -c "[ -f '$kb/assets/likec4/index.png' ] && [ -z \"\$(git -C '$kb' status --porcelain)\" ]" || note "$out"
 }
