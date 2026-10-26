@@ -129,11 +129,19 @@ lefthook run kb-diagrams
 | `managed/` | The only source of all managed text |
 | `tests/` | Fixtures and the end-to-end suite |
 
-Run the tests with:
+With mise 2026.10.19 or later and read access to `Rubio-Enterprises/standards`, bootstrap this
+framework checkout before running the tests:
 
 ```sh
+mise trust
+mise bootstrap --only repos,tools --yes
+mise run setup
 bash tests/run.sh
 ```
+
+The gitignored `.standards-config/` checkout supplies this repository's lint configs, tool pins
+and hooks. Bootstrap each fresh clone or worktree; `mise install` alone does not provision it.
+Knowledgebases created by the framework still carry no mise config or standards checkout.
 
 The suite runs offline once the pinned tools are cached: `mise run setup` installs them, with a
 Rust toolchain to build okf and Playwright's headless Chromium, and the Dev Container runs it on
@@ -150,10 +158,10 @@ fixtures likec4`); `KB_TEST_VERBOSE=1` prints the evidence behind each result an
 
 This is a private Rubio-Enterprises repository. Collaborators can ask questions in
 [repository issues](https://github.com/Rubio-Enterprises/knowledgebase-framework/issues) and submit changes through pull requests.
-Follow [.github/PULL_REQUEST_TEMPLATE.md](.github/PULL_REQUEST_TEMPLATE.md): use a
+Follow the [organization PR template](https://github.com/Rubio-Enterprises/.github/blob/main/.github/PULL_REQUEST_TEMPLATE.md): use a
 Conventional Commits title, link the work item, and complete What?, Why?, How?, and
 Testing? (plus the template's relevant review and dependency sections). Keep the
-body within 400 words and run the repository checks before requesting review.
+body within 400 words and run the repository checks before requesting review, after the setup above.
 
 ```bash
 mise run test
