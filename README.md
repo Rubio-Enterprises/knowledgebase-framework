@@ -35,8 +35,7 @@ layout is what it is: [`docs/layout-rationale.md`](docs/layout-rationale.md).
   the Rust toolchain that compiles okf.
 - Nothing for mise's `locked` setting: the Hooks carry no lockfile, so they run their pinned tools
   with lockfiles off, neither required nor written. Everything else stays locked.
-- Read access to `Rubio-Enterprises/knowledgebase-framework` through your git credentials: lefthook
-  fetches the Hooks over HTTPS.
+- No framework credential is needed: Copier and lefthook fetch this public repository over HTTPS.
 - A network connection the first time. The Hooks download their pinned tools through `mise x` on
   first use (okf is compiled from source, which took 13 seconds on an M-series Mac), and the LikeC4 add-on
   downloads Playwright's headless Chromium.
@@ -141,7 +140,8 @@ bash tests/run.sh
 
 The gitignored `.standards-config/` checkout supplies this repository's lint configs, tool pins
 and hooks. Bootstrap each fresh clone or worktree; `mise install` alone does not provision it.
-Knowledgebases created by the framework still carry no mise config or standards checkout.
+Knowledgebases created by the framework still carry no mise config or standards checkout and do not
+need access to the private standards repository.
 
 The suite runs offline once the pinned tools are cached: `mise run setup` installs them, with a
 Rust toolchain to build okf and Playwright's headless Chromium, and the Dev Container runs it on
@@ -156,8 +156,10 @@ fixtures likec4`); `KB_TEST_VERBOSE=1` prints the evidence behind each result an
 
 ## Contributing
 
-This is a private Rubio-Enterprises repository. Collaborators can ask questions in
-[repository issues](https://github.com/Rubio-Enterprises/knowledgebase-framework/issues) and submit changes through pull requests.
+Ask questions in [repository issues](https://github.com/Rubio-Enterprises/knowledgebase-framework/issues)
+and submit changes through pull requests.
+Framework development and CI still require access to the private `Rubio-Enterprises/standards`
+repository as described above; public framework access does not grant that access.
 Follow the [organization PR template](https://github.com/Rubio-Enterprises/.github/blob/main/.github/PULL_REQUEST_TEMPLATE.md): use a
 Conventional Commits title, link the work item, and complete What?, Why?, How?, and
 Testing? (plus the template's relevant review and dependency sections). Keep the
