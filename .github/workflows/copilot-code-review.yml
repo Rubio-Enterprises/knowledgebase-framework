@@ -1,0 +1,15 @@
+name: Copilot Code Review
+
+"on": workflow_dispatch
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest # Copilot review must not inherit the org's private runner
+    timeout-minutes: 59
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
