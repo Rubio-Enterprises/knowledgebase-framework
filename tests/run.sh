@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # The framework's tests: `bash tests/run.sh [group...]`. Offline once the pinned tools are cached.
 # Groups: syntax reference creation embedded fixtures update fail-closed managed unstaged markdownlint
-# likec4 notices
+# likec4 notices citations
 # KB_TEST_VERBOSE=1 shows evidence lines; KB_TEST_KEEP=1 keeps the scratch folder.
 set -uo pipefail
 # shellcheck source=tests/lib.sh
@@ -470,6 +470,21 @@ group_reference() {
       while IFS='|' read -r t a; do [ \"\$(printf '%s' \"\$t\" | tr 'A-Z ' 'a-z-')\" = \"\$a\" ] || exit 1; done"
 }
 
+group_citations() {
+  local kb="$T/large-citations" n
+  create "$kb" -d likec4=false || {
+    fail "large citations: create its knowledgebase" "$(cat "$T/last-copy.log")"
+    return 1
+  }
+  overlay "$FW/tests/fixtures/pass" "$kb"
+  for ((n = 0; n < 128; n++)); do
+    cp "$FW/tests/fixtures/pass/docs/about-tracing-tools.md" "$kb/docs/probe-$n.md"
+  done
+  # shellcheck disable=SC2016 # The child Bash expands its positional argument
+  check "large citations: real kb-check passes with /bin/bash on PATH" \
+    /bin/bash -c 'cd "$1" && lefthook run kb-check && git diff --check' _ "$kb"
+}
+
 group_notices() {
   local kb="$T/notices" out
   [ -d "$T/root-likec4-false" ] || create "$T/root-likec4-false" -d likec4=false
@@ -482,7 +497,7 @@ group_notices() {
     bash -c "printf '%s' \"\$1\" | grep -q 'its Shell ($NEW_TAG) predates v9.0.0. Run .copier update --trust -a .copier-answers.knowledgebase.yml. in it' && [ \"\$(git -C '$kb' log -1 --format=%s)\" = 'docs: a note' ]" _ "$out"
 }
 
-ALL_GROUPS="syntax reference creation embedded fixtures update fail-closed managed unstaged markdownlint likec4 notices"
+ALL_GROUPS="syntax reference creation embedded fixtures update fail-closed managed unstaged markdownlint likec4 notices citations"
 setup_world
 # shellcheck disable=SC2048,SC2086 # group names never contain spaces
 for g in ${*:-$ALL_GROUPS}; do
