@@ -276,10 +276,18 @@ step_citations() {
                  {gsub(/`[^`]*`/, ""); print}' "$doc")"
     defs="$(printf '%s\n' "$body" | sed -nE 's/^\[\^([^]]+)\]:.*/\1/p' | sort -u)"
     refs="$(printf '%s\n' "$body" | sed -E 's/^\[\^[^]]+\]://' | grep -oE '\[\^[^]]+\]' | sed -E 's/^\[\^(.*)\]$/\1/' | sort -u || true)"
-    while IFS= read -r x; do [ -n "$x" ] && echo "$doc: footnote [^$x] is referenced but never defined" >&2 && status=1; done < <(comm -23 <(printf '%s\n' "$refs") <(printf '%s\n' "$defs"))
-    while IFS= read -r x; do [ -n "$x" ] && echo "$doc: footnote [^$x] is defined but never referenced" >&2 && status=1; done < <(comm -13 <(printf '%s\n' "$refs") <(printf '%s\n' "$defs"))
-    while IFS= read -r x; do [ -n "$x" ] && echo "$doc: footnote [^$x] matches no sources[].id" >&2 && status=1; done < <(comm -23 <(printf '%s\n' "$refs") <(printf '%s\n' "$ids"))
-    while IFS= read -r x; do [ -n "$x" ] && echo "$doc: source $x is never cited with [^$x]" >&2 && status=1; done < <(comm -13 <(printf '%s\n' "$refs") <(printf '%s\n' "$ids"))
+    # Synchronous files avoid Bash 3.2's repeated process-substitution lockup
+    printf '%s\n' "$refs" >"$WORK/citation-refs" || return 1
+    printf '%s\n' "$defs" >"$WORK/citation-defs" || return 1
+    printf '%s\n' "$ids" >"$WORK/citation-ids" || return 1
+    comm -23 "$WORK/citation-refs" "$WORK/citation-defs" >"$WORK/citation-diff" || return 1
+    while IFS= read -r x; do [ -n "$x" ] && echo "$doc: footnote [^$x] is referenced but never defined" >&2 && status=1; done <"$WORK/citation-diff"
+    comm -13 "$WORK/citation-refs" "$WORK/citation-defs" >"$WORK/citation-diff" || return 1
+    while IFS= read -r x; do [ -n "$x" ] && echo "$doc: footnote [^$x] is defined but never referenced" >&2 && status=1; done <"$WORK/citation-diff"
+    comm -23 "$WORK/citation-refs" "$WORK/citation-ids" >"$WORK/citation-diff" || return 1
+    while IFS= read -r x; do [ -n "$x" ] && echo "$doc: footnote [^$x] matches no sources[].id" >&2 && status=1; done <"$WORK/citation-diff"
+    comm -13 "$WORK/citation-refs" "$WORK/citation-ids" >"$WORK/citation-diff" || return 1
+    while IFS= read -r x; do [ -n "$x" ] && echo "$doc: source $x is never cited with [^$x]" >&2 && status=1; done <"$WORK/citation-diff"
   done < <(concept_documents "$kb")
   return "$status"
 }
