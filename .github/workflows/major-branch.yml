@@ -1,7 +1,7 @@
 # major-branch: the writer of the floating major branch (ADR-0004). Knowledgebases fetch the Hooks
 # from `v1`, so each v1.x release fast-forwards `v1` to the release's tag. The push is never forced:
-# git rejects a move that isn't a fast-forward, which is the safety we want (the same rule as
-# standards' channel-canary.yml). A new major's branch is created by hand, together with its
+# git rejects a move that isn't a fast-forward, which is the safety we want. A new major's
+# branch is created by hand, together with its
 # Migration file (ADR-0010), so this workflow never creates one.
 name: major-branch
 "on":
