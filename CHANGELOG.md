@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/Rubio-Enterprises/knowledgebase-framework/compare/v2.0.1...v2.0.2) (2026-10-30)
+
+
+### Bug Fixes
+
+* **hooks:** avoid bash 3.2 citation subprocess failures ([#55](https://github.com/Rubio-Enterprises/knowledgebase-framework/issues/55)) ([975c549](https://github.com/Rubio-Enterprises/knowledgebase-framework/commit/975c549a2d9907f095befccbd8a643f321816130))
+
 ## [2.0.1](https://github.com/Rubio-Enterprises/knowledgebase-framework/compare/v2.0.0...v2.0.1) (2026-10-26)
 
 
