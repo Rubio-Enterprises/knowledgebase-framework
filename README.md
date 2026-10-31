@@ -62,8 +62,11 @@ Run the same command with a `<folder>` inside an existing repository. The knowle
 own control documents, but no `lefthook.yml` and no commit, because those belong to the
 repository. Copier prints two things to add to the repository once:
 
-1. The lefthook lines: the Hooks remote and the fail-closed check. A repository rendered by
-   Rubio-Enterprises standards declares the `has_knowledgebase` facet instead.
+1. The lefthook lines: the Hooks remote and the fail-closed check. They go in the repository's
+   own `lefthook.yml` even when it extends shared hooks, because lefthook fetches but never runs
+   `remotes` declared in an extended file. In a repository on `@rubio-enterprises/standards`, the
+   package's initializer adds the remote when it creates `lefthook.yml`, and its `knowledgebase
+   hooks` Check fails until the remote is declared and fetched.
 2. A pointer line for the repository's `AGENTS.md`, because agents load `AGENTS.md` only from their
    working folder and its parents.
 
@@ -113,7 +116,9 @@ lefthook run kb-diagrams
   3. Announce it to the previous major: on a commit on top of its branch, raise
      `hooks/shell-version` to `N.0.0`, tag it as that major's next patch, push the tag, and run
      `major-branch.yml` with it, which fast-forwards the branch.
-  4. Point standards' `has_knowledgebase` facet at the new ref, for embedded knowledgebases.
+  4. For embedded knowledgebases, release `@rubio-enterprises/standards` with the new ref in its
+     `knowledgebase hooks` Check and initializer, then move the `ref` in each embedding
+     repository's `lefthook.yml`.
 
 ## Develop the framework
 
@@ -128,20 +133,19 @@ lefthook run kb-diagrams
 | `managed/` | The only source of all managed text |
 | `tests/` | Fixtures and the end-to-end suite |
 
-With mise 2026.10.19 or later and read access to `Rubio-Enterprises/standards`, bootstrap this
-framework checkout before running the tests:
+With mise 2026.10.19 or later and a `NODE_AUTH_TOKEN` that can read
+`@rubio-enterprises/standards` from GitHub Packages (`export NODE_AUTH_TOKEN="$(gh auth token)"`):
 
 ```sh
 mise trust
-mise bootstrap --only repos,tools --yes
-mise run setup
-bash tests/run.sh
+mise run setup   # the standards package, its tools, the git hooks and the Hooks' pinned tools
+mise run check   # every standards Check on every tracked file
+mise run test    # bash tests/run.sh, with a JUnit report in reports/test/
 ```
 
-The gitignored `.standards-config/` checkout supplies this repository's lint configs, tool pins
-and hooks. Bootstrap each fresh clone or worktree; `mise install` alone does not provision it.
-Knowledgebases created by the framework still carry no mise config or standards checkout and do not
-need access to the private standards repository.
+`mise run setup` installs `@rubio-enterprises/standards` into the gitignored `.standards/`, which
+supplies this repository's lint configs, tool pins and git hooks. Knowledgebases created by the
+framework still carry no mise config and need no standards package.
 
 The suite runs offline once the pinned tools are cached: `mise run setup` installs them, with a
 Rust toolchain to build okf and Playwright's headless Chromium, and the Dev Container runs it on
@@ -158,20 +162,20 @@ fixtures likec4`); `KB_TEST_VERBOSE=1` prints the evidence behind each result an
 
 Ask questions in [repository issues](https://github.com/Rubio-Enterprises/knowledgebase-framework/issues)
 and submit changes through pull requests.
-Framework development and CI still require access to the private `Rubio-Enterprises/standards`
-repository as described above; public framework access does not grant that access.
+Framework development and CI install the organization's `@rubio-enterprises/standards` package as
+described above; public framework access does not grant access to it.
 Follow the [organization PR template](https://github.com/Rubio-Enterprises/.github/blob/main/.github/PULL_REQUEST_TEMPLATE.md): use a
 Conventional Commits title, link the work item, and complete What?, Why?, How?, and
 Testing? (plus the template's relevant review and dependency sections). Keep the
 body within 400 words and run the repository checks before requesting review, after the setup above.
 
 ```bash
+mise run check
 mise run test
-mise exec -- markdownlint-cli2 README.md
 ```
 
 See [AGENTS.md](AGENTS.md) for invariants and test-fixture requirements. `mise run test`
-wraps `bash tests/run.sh`; this repository has no `lint` or `typecheck` task.
+wraps `bash tests/run.sh`; this repository has no `typecheck` or `build` task.
 
 ## License
 
