@@ -26,6 +26,10 @@ jobs:
     # warm on a laptop, much longer cold.
     runs-on: ${{ fromJSON(vars.RUNNERS || '{}').medium || fromJSON('["ubuntu-latest"]') }}
     timeout-minutes: 60
+    env:
+      # Playwright 1.60 (the Hooks pin it for likec4) has no build for the pool's Ubuntu 26.04; the
+      # 24.04 Chromium and its packages serve it.
+      PLAYWRIGHT_HOST_PLATFORM_OVERRIDE: ubuntu24.04-x64
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
