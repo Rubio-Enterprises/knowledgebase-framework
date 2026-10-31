@@ -506,4 +506,5 @@ for g in ${*:-$ALL_GROUPS}; do
 done
 # shellcheck disable=SC2153 # PASSED and FAILED are set by lib.sh
 printf '\n%d passed, %d failed\n' "$PASSED" "$FAILED"
+write_junit
 [ "$FAILED" -eq 0 ]

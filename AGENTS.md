@@ -16,6 +16,9 @@ the decisions.
   inside functions called from `if` or `||`.
 - **Tools are pinned in `hooks/knowledgebase.sh`** and reached through `mise x`. Knowledgebases
   carry no `mise.toml`.
+- **The Hooks reach a repository only through `remotes` in its own `lefthook.yml`**: lefthook
+  ignores `remotes` in an extended file. The standards package's `knowledgebase hooks` Check and
+  its initializer name the `v2` ref, so a new major also needs a standards release.
 - **The Shell names the real Hooks URL.** Tests redirect it with git's `insteadOf`, never with a
   template answer.
 - **Keep the template's local-section text stable.** `copier update` merges template changes into
@@ -30,6 +33,7 @@ the decisions.
 
 ## Checking a change
 
-Run `bash tests/run.sh`; a change is done when every test passes. A new rule gets a must-fail
+Run `mise run check` (the standards Checks) and `mise run test` (`bash tests/run.sh` plus its
+JUnit report); a change is done when both pass. A new rule gets a must-fail
 fixture in `tests/fixtures/fail/<name>/` with an `expect` file naming the steps that enforce it and
 a message they report.

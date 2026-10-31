@@ -1,0 +1,54 @@
+# This repository's tools and tasks. The Checks, their tool pins and the Conformance Tasks (check,
+# check:pr, fmt) come from @rubio-enterprises/standards, which `mise run setup` installs into
+# .standards/ and mise loads through .config/mise/conf.d/standards.toml.
+min_version = "2026.10.19"
+
+[env]
+# STANDARDS_VERSION = "1.4.2"  # Release Pin: hold this release while the latest breaks the repository; <issue link>
+# STANDARDS_TEST_GATE = "off"  # Opt-out of the Test Gate; <reason>
+
+[tools]
+node = "24.21.0"
+# The tests render the Shell with copier, as a knowledgebase owner does.
+"pipx:copier" = "9.18.1"
+
+[tasks.setup]
+description = "Install the standards package, its tools and the git hooks, then every setup:* task"
+depends = ["standards:install"]
+# `mise install` only when something is missing: on a machine with many tracked configs a no-op
+# install still rebuilds every shim.
+run = ['test -z "$(mise ls --missing)" || mise install', "mise exec -- lefthook install"]
+# This repository's own setup steps (dependencies the Checks or Lifecycle Tasks need) are setup:*
+# tasks; none is fine.
+depends_post = [{ task = "setup:*", optional = true }]
+
+[tasks."standards:install"]
+description = "Install the latest Standards Release (or the STANDARDS_VERSION Release Pin) into .standards/"
+run = '''npm install --prefix .standards --no-save --prefer-online --fetch-retries=0 --no-audit --no-fund --ignore-scripts --loglevel=error "--@rubio-enterprises:registry=${STANDARDS_REGISTRY:-https://npm.pkg.github.com}" '--//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' "@rubio-enterprises/standards@${STANDARDS_VERSION:-latest}"'''
+
+# Lifecycle Tasks (test, typecheck, build, e2e) are this repository's own. `test` and `e2e` write
+# reports/test/junit.xml; the Test Gate runs each one that exists.
+
+# The Hooks reach each tool through `mise x` at the version hooks/knowledgebase.sh pins, and
+# `mise x` downloads a tool on first use. Calling each one here installs those exact pins, so
+# `mise run test` runs offline. okf's pin brings the Rust toolchain that compiles it.
+[tasks."setup:hook-tools"]
+description = "Install the tools the Hooks pin, and Chromium for likec4's PNG export"
+shell = "bash -c"
+run = '''
+set -euo pipefail
+. hooks/knowledgebase.sh
+okf --version
+yq --version
+jq --version
+check_jsonschema --version
+likec4 --version
+playwright install --with-deps chromium-headless-shell
+'''
+
+[tasks.test]
+description = "The framework's end-to-end suite (offline after mise run setup), with the JUnit report the Test Gate checks"
+run = 'KB_TEST_JUNIT="$PWD/reports/test/junit.xml" bash tests/run.sh'
+
+[hooks]
+enter = "test -f .standards/node_modules/@rubio-enterprises/standards/mise/standards.toml || echo 'standards: not installed; run mise run setup' >&2"

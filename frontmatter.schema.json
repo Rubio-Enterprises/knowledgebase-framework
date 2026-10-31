@@ -9,14 +9,7 @@
       "enum": ["How-to guide", "Reference", "Explanation", "Tutorial"]
     },
     "genre": {
-      "enum": [
-        "Research",
-        "Investigation",
-        "Runbook",
-        "Plan",
-        "Decision",
-        "Map"
-      ]
+      "enum": ["Research", "Investigation", "Runbook", "Plan", "Decision", "Map"]
     },
     "title": { "type": "string", "minLength": 1 },
     "description": { "type": "string", "minLength": 1 },
@@ -59,15 +52,7 @@
     },
     "stale_after": { "$ref": "#/$defs/instant" }
   },
-  "required": [
-    "type",
-    "genre",
-    "title",
-    "description",
-    "tags",
-    "status",
-    "generated"
-  ],
+  "required": ["type", "genre", "title", "description", "tags", "status", "generated"],
   "additionalProperties": false,
   "$defs": {
     "hyperlink": {
