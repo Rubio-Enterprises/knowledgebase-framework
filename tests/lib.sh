@@ -27,11 +27,32 @@ PASSED=0
 pass() {
   PASSED=$((PASSED + 1))
   printf 'ok - %s\n' "$1"
+  junit_case "$1" ''
 }
 fail() {
   FAILED=$((FAILED + 1))
   printf 'not ok - %s\n' "$1"
   [ -z "${2:-}" ] || printf '%s\n' "$2" | sed 's/^/    # /'
+  junit_case "$1" "<failure message=\"failed\">$(printf '%s' "${2:-}" | strip_colors | tr -d '\000-\010\013\014\016-\037' | xml_escape)</failure>"
+}
+
+# KB_TEST_JUNIT=<file>: also write each result as a JUnit test case (write_junit, at the end of the
+# run), the report the standards Test Gate checks.
+xml_escape() { sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g'; }
+junit_case() {
+  [ -n "${KB_TEST_JUNIT:-}" ] || return 0
+  printf '  <testcase classname="knowledgebase-framework" name="%s">%s</testcase>\n' \
+    "$(printf '%s' "$1" | xml_escape)" "$2" >>"$T/junit-cases.xml"
+}
+write_junit() {
+  [ -n "${KB_TEST_JUNIT:-}" ] || return 0
+  mkdir -p "$(dirname "$KB_TEST_JUNIT")"
+  {
+    printf '<?xml version="1.0" encoding="UTF-8"?>\n'
+    printf '<testsuite name="knowledgebase-framework" tests="%d" failures="%d">\n' "$((PASSED + FAILED))" "$FAILED"
+    if [ -f "$T/junit-cases.xml" ]; then cat "$T/junit-cases.xml"; fi
+    printf '</testsuite>\n'
+  } >"$KB_TEST_JUNIT"
 }
 check() { # description command... : passes when the command succeeds
   local name=$1 out
