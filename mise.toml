@@ -10,7 +10,7 @@ min_version = "2026.10.19"
 [tools]
 node = "24.21.0"
 # The tests render the Shell with copier, as a knowledgebase owner does.
-"pipx:copier" = "9.18.1"
+"pipx:copier" = "9.19.1"
 
 [tasks.setup]
 description = "Install the standards package, its tools and the git hooks, then every setup:* task"
