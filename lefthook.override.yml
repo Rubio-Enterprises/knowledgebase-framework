@@ -14,9 +14,3 @@
 #               glob: "**/*.{json,jsonc}"   # this repository formats JS/TS with its own tools
 #
 # No Check validates this file: confirm a patch with `lefthook dump`.
-
-pre-commit:
-  # copier.yml is this framework's own Copier template: it names the knowledgebases' answers file
-  # (.copier-answers.knowledgebase.yml), which the `standards wiring` pattern `\.copier-answers`
-  # mistakes for the retired standards answers file. Drop this once the pattern spares it.
-  exclude_tags: [wiring]
