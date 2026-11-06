@@ -1,0 +1,13 @@
+# Repository toolchain pins only, installed by Dockerfile
+# Check tools are supplied by base at /opt/standards
+[tools]
+node = "24.21.0"
+python = "3.14.7"
+"aqua:jqlang/jq" = "1.8.2"
+rust = { version = "1.99.1", profile = "minimal" }
+"cargo:okf" = { version = "0.2.7", default-features = false, features = "validator" }
+"pipx:check-jsonschema" = "0.37.4"
+"npm:likec4" = "1.59.4"
+"npm:playwright" = "1.60.0"
+# The tests render the Shell with copier, as a knowledgebase owner does.
+"pipx:copier" = "9.19.1"

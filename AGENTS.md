@@ -37,3 +37,22 @@ Run `mise run check` (the standards Checks) and `mise run test` (`bash tests/run
 JUnit report); a change is done when both pass. A new rule gets a must-fail
 fixture in `tests/fixtures/fail/<name>/` with an `expect` file naming the steps that enforce it and
 a message they report.
+
+## Commands
+
+First command in a fresh checkout: `just build`.
+Never install toolchains on the host — all project commands run in the dev image through `just`.
+
+```bash
+just build
+just setup
+just check
+just fmt
+just check-pr
+just setup-hook-tools
+just test
+just shell
+just exec <cmd...>
+```
+
+Single test: `just exec uv run pytest path::test` (Python); otherwise prefix the underlying runner with `just exec`.

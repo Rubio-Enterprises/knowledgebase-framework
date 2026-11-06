@@ -1,6 +1,10 @@
 {
   "name": "knowledgebase-framework",
-  "image": "ghcr.io/rubio-enterprises/knowledgebase-framework/devcontainer:main",
+  "dockerComposeFile": ["../compose.yaml"],
+  "service": "dev",
+  "workspaceFolder": "${localWorkspaceFolder}",
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": false,
   "customizations": {
     "fly-durable": {
       "setupHosts": [
@@ -13,10 +17,5 @@
         "storage.googleapis.com"
       ]
     }
-  },
-  "securityOpt": ["no-new-privileges=false"],
-  "onCreateCommand": "mise run setup",
-  "remoteEnv": {
-    "NODE_AUTH_TOKEN": "${localEnv:NODE_AUTH_TOKEN}"
   }
 }

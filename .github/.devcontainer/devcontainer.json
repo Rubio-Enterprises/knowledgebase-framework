@@ -1,8 +1,0 @@
-{
-  "name": "Repository image build",
-  "features": {
-    "ghcr.io/devcontainers-extra/features/apt-packages:1.0.6": {
-      "packages": "graphviz"
-    }
-  }
-}
