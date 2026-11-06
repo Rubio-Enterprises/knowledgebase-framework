@@ -15,7 +15,7 @@ the decisions.
   empty-array expansion under `set -u`. Steps return failures explicitly, because `set -e` is off
   inside functions called from `if` or `||`.
 - **Tools are pinned in `hooks/knowledgebase.sh`** and reached through `mise x`. Knowledgebases
-  carry no `mise.toml`.
+  carry no `image/mise.toml`.
 - **The Hooks reach a repository only through `remotes` in its own `lefthook.yml`**: lefthook
   ignores `remotes` in an extended file. The standards package's `knowledgebase hooks` Check and
   its initializer name the `v2` ref, so a new major also needs a standards release.
@@ -33,7 +33,7 @@ the decisions.
 
 ## Checking a change
 
-Run `mise run check` (the standards Checks) and `mise run test` (`bash tests/run.sh` plus its
+Run `just check` (the standards Checks) and `just test` (`bash tests/run.sh` plus its
 JUnit report); a change is done when both pass. A new rule gets a must-fail
 fixture in `tests/fixtures/fail/<name>/` with an `expect` file naming the steps that enforce it and
 a message they report.
