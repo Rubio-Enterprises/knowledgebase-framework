@@ -1,7 +1,7 @@
 # Repository toolchain pins only, installed by Dockerfile
 # Check tools are supplied by base at /opt/standards
 [tools]
-node = "24.21.0"
+node = "24.22.2"
 python = "3.14.7"
 "aqua:jqlang/jq" = "1.8.2"
 rust = { version = "1.99.1", profile = "minimal" }
