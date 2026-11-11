@@ -8,7 +8,9 @@ COPY image/ /etc/mise/
 RUN --mount=type=secret,id=GITHUB_TOKEN,env=MISE_GITHUB_TOKEN /opt/standards/image/install.sh
 
 COPY bin/prewarm-hook-tools.sh /usr/local/bin/prewarm-hook-tools
+USER vscode
 RUN /usr/local/bin/prewarm-hook-tools
+USER root
 COPY bin/playwright-env.sh /usr/local/lib/knowledge-playwright-env.sh
 COPY bin/dev-entrypoint.sh /usr/local/bin/knowledge-entrypoint
 ENTRYPOINT ["/usr/local/bin/knowledge-entrypoint"]
