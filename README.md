@@ -79,6 +79,10 @@ that lints Markdown keeps linting everything else (ADR-0006).
 
 ## Usage
 
+A knowledgebase's `docs/adr/` holds the repository's own ADRs, not Knowledge documents; the Hooks
+leave that folder out of formatting, validation, document inventories and generated indexes.
+Knowledge documents may link to ADR files, and those links are still checked for missing targets.
+
 Run the checks or re-export diagrams from a knowledgebase's repository:
 
 ```sh

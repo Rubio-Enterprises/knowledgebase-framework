@@ -203,15 +203,45 @@ step_managed() {
   return "$status"
 }
 
-# --- Steps 2-4: okf -------------------------------------------------------------------------------
+bundle_paths() {
+  local docs
+  docs="$(at "$1" docs)"
+  shift
+  find "$docs" -path "$docs/adr" -prune -o "$@" -print
+}
+
+# OKF 0.2.7 has no exclusion option, so bundle-wide commands get a copy without repository ADRs
+prepare_bundle() {
+  local kb=$1 docs f target
+  docs="$(at "$kb" docs)"
+  BUNDLE="$WORK/bundle/docs"
+  rm -rf "$WORK/bundle" && mkdir -p "$BUNDLE" || return 1
+  bundle_paths "$kb" >"$WORK/bundle-paths" || return 1
+  while IFS= read -r f; do
+    target="$BUNDLE${f#"$docs"}"
+    if [ -d "$f" ]; then
+      mkdir -p "$target" || return 1
+    else
+      cp -P "$f" "$target" || return 1
+    fi
+  done <"$WORK/bundle-paths"
+}
+
+okf_bundle() {
+  local command=$1 kb=$2
+  shift 2
+  prepare_bundle "$kb" || return 1
+  (cd "$WORK/bundle" && okf "$command" docs "$@")
+}
+
 step_fmt() {
   local kb=$1 mode=$2 docs f status=0
   docs="$(at "$kb" docs)"
   [ -d "$docs" ] || return 0
   if [ "$mode" = commit ]; then
-    staged_under "$docs" >"$WORK/fmt"
+    comm -12 <(staged_under "$docs" | sort) <(bundle_paths "$kb" -type f -name '*.md' | sort) >"$WORK/fmt"
   else
-    find "$docs" -type f -name '*.md' >"$WORK/fmt"
+    bundle_paths "$kb" -type f -name '*.md' >"$WORK/fmt"
   fi
   mkdir -p "$WORK/fmt.d"
   while IFS= read -r f; do
@@ -226,19 +256,20 @@ step_fmt() {
 }
 
 step_index() {
-  local kb=$1 docs
-  docs="$(at "$kb" docs)"
-  find "$docs" -type f -name index.md >"$WORK/indexes"
-  guarded "$WORK/indexes" quiet okf index "$docs" || return 1
-  find "$docs" -type f -name index.md >>"$STAGE"
+  local kb=$1 f status=0
+  quiet okf_bundle index "$kb" || return 1
+  find "$BUNDLE" -type f -name index.md >"$WORK/indexes"
+  while IFS= read -r f; do
+    replace_if_changed "$f" "$(at "$kb" "docs/${f#"$BUNDLE/"}")" || status=1
+  done <"$WORK/indexes"
+  return "$status"
 }
 
-step_validate() { quiet okf validate "$(at "$1" docs)"; }
-step_lint() { quiet okf lint "$(at "$1" docs)"; }
+step_validate() { quiet okf_bundle validate "$1"; }
+step_lint() { quiet okf_bundle lint "$1"; }
 
-# Concept documents of knowledgebase $1: every .md in the bundle except OKF's reserved files.
 concept_documents() {
-  find "$(at "$1" docs)" -type f -name '*.md' ! -name index.md ! -name log.md | sort
+  bundle_paths "$1" -type f -name '*.md' ! -name index.md ! -name log.md | sort
 }
 
 # --- Step 5: frontmatter schema (what okf validate ignores: vocabularies, required fields) ------------
@@ -298,7 +329,7 @@ step_citations() {
 step_links() {
   local kb=$1 docs id raw target status=0
   docs="$(at "$kb" docs)"
-  okf links --json "$docs" >"$WORK/links.json" || return 1
+  okf_bundle links "$kb" --json >"$WORK/links.json" || return 1
   while IFS="$(printf '\t')" read -r id raw; do
     target="${raw%%#*}"
     target="${target%%\?*}"
