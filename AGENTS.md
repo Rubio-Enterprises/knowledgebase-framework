@@ -16,9 +16,11 @@ the decisions.
   inside functions called from `if` or `||`.
 - **Tools are pinned in `hooks/knowledgebase.sh`** and reached through `mise x`. Knowledgebases
   carry no `image/mise.toml`.
-- **The Hooks reach a repository only through `remotes` in its own `lefthook.yml`**: lefthook
-  ignores `remotes` in an extended file. The standards package's `knowledgebase hooks` Check and
-  its initializer name the `v2` ref, so a new major also needs a standards release.
+- **The Hooks reach a repository two ways.** Commits fetch them through `remotes` in its own
+  `lefthook.yml`: lefthook ignores `remotes` in an extended file. `standards check` (`just check`
+  and CI) runs the copy baked into the standards base image, which takes a release only when
+  standards merges Renovate's bump. The standards package's `knowledgebase hooks` Check and its
+  initializer name the `v2` ref, so a new major also needs a standards release.
 - **The Shell names the real Hooks URL.** Tests redirect it with git's `insteadOf`, never with a
   template answer.
 - **Keep the template's local-section text stable.** `copier update` merges template changes into
@@ -26,8 +28,8 @@ the decisions.
 - **Anything that would fail an existing document is a new major** (ADR-0004), shipped with a
   Migration file where content needs converting.
 - **Never move a major branch by hand.** `.github/workflows/major-branch.yml` fast-forwards it on
-  each release; a merged fix ships to every knowledgebase within 24 hours. Only a new major's
-  branch is created by hand (README, Versions).
+  each release; a merged fix reaches every knowledgebase's commits within 24 hours. Only a new
+  major's branch is created by hand (README, Versions).
 - **Agent-facing text** (`managed/agents-block.md`, `managed/knowledgebase/*.md`) must earn every
   line. Apply the writing-for-agents skill when editing it.
 - **Architecture decisions**: an ADR records why a rule exists. Before changing a decision, check

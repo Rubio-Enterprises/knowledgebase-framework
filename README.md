@@ -102,6 +102,9 @@ lefthook run kb-diagrams
   `.github/workflows/major-branch.yml` fast-forwards it to the release's tag. The Hooks follow it, so fixes reach every knowledgebase
   within 24 hours without anyone visiting it (ADR-0004). The workflow never creates a new major's
   branch; that is created by hand, with its Migration file (ADR-0004).
+- In a repository on `@rubio-enterprises/standards`, `standards check` (`just check` and CI) runs
+  the Hooks baked into the standards base image, not the fetched ones. A release reaches that copy
+  when standards merges the Renovate pull request that bumps it.
 - A change the Hooks can't make themselves needs `copier update`. Raise `hooks/shell-version` to
   the release that carries it, and every knowledgebase created from an older Shell prints a notice
   on its next commit. To update one, run this in its folder:
