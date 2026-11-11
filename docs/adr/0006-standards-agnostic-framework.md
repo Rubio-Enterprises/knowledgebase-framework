@@ -1,26 +1,27 @@
 ---
 status: accepted
+date: 2026-10-09
 ---
 
-# The framework knows nothing about standards; a facet only wires the Hooks
+# Keep the framework independent of standards
 
-A knowledgebase must work in any GitHub org, or in none, without Rubio-Enterprises standards. Each
-knowledgebase therefore handles the one standards conflict it can solve itself. Its root carries a
-`.markdownlint.jsonc` containing `{ "default": false }`, so markdownlint-cli2 skips and never
-fixes anything under it. Every other Markdown file in the repository keeps full coverage. This
-was verified with standards' config, passing explicit file paths the way standards' treefmt does.
+## Context and Problem Statement
 
-The other conflict needs standards' cooperation. Standards generates the whole `lefthook.yml`,
-and lefthook replaces the `remotes` list from `lefthook-local.yml` instead of merging it. A
-standards facet, `has_knowledgebase`, solves it by adding the Hooks remote and the fail-closed
-check to standards' generated stub. The facet ships with framework v1, and the framework never
-references standards. The facet says *has*, not *is*, because a repository can contain a
-knowledgebase without being one (ADR-0008).
+Knowledgebases must work without Rubio-Enterprises standards, whether standalone or embedded, but a containing repository may already lint Markdown and manage hooks. Where should integration with those repository-wide tools belong?
 
 ## Considered Options
 
-- **Fix each org knowledgebase by hand**: `lefthook-local.yml` would repeat standards' remotes and
-  drift whenever standards' stub changes.
-- **The facet lists knowledgebase paths and excludes them from markdownlint**: needs a path answer
-  per knowledgebase. The knowledgebase's own opt-out works in any repository.
-- **A "layered on standards" Copier answer in the framework**: couples the framework to one org.
+- Standards-independent framework: each knowledgebase owns its Markdown lint opt-out; the containing repository wires the Hooks.
+- Hand-maintained lefthook-local configuration: rejected because its remotes replace rather than merge the host's list, duplicating configuration that can drift.
+- Host integration listing knowledgebase paths for Markdown exclusions: rejected because it requires a path answer for every knowledgebase.
+- A framework Copier answer for layering on standards: rejected because it couples the framework to one organization.
+
+## Decision Outcome
+
+Chosen option: "Standards-independent framework", because knowledgebases can work outside the organization without duplicating their paths in host configuration.
+
+## Consequences
+
+- Good, because a knowledgebase can use the framework without adopting organization standards.
+- Good, because its own Markdown lint opt-out leaves the containing repository's other Markdown covered.
+- Bad, because an embedding repository must integrate the Hooks in its own hook configuration.

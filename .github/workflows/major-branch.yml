@@ -2,7 +2,7 @@
 # from `v1`, so each v1.x release fast-forwards `v1` to the release's tag. The push is never forced:
 # git rejects a move that isn't a fast-forward, which is the safety we want. A new major's
 # branch is created by hand, together with its
-# Migration file (ADR-0010), so this workflow never creates one.
+# Migration file (ADR-0004), so this workflow never creates one.
 name: major-branch
 "on":
   release:
@@ -42,7 +42,7 @@ jobs:
           branch="${TAG%%.*}"
           commit="$(git rev-parse --verify "refs/tags/$TAG^{commit}")"
           if ! git rev-parse --verify --quiet "refs/remotes/origin/$branch" >/dev/null; then
-            echo "::error::$branch doesn't exist; a new major's branch is created by hand (ADR-0010)."
+            echo "::error::$branch doesn't exist; a new major's branch is created by hand (ADR-0004)."
             exit 1
           fi
           if git push origin "$commit:refs/heads/$branch"; then

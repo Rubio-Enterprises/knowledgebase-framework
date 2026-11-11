@@ -24,12 +24,17 @@ the decisions.
 - **Keep the template's local-section text stable.** `copier update` merges template changes into
   text the knowledgebase owns, and a change next to a local edit conflicts.
 - **Anything that would fail an existing document is a new major** (ADR-0004), shipped with a
-  Migration file where content needs converting (ADR-0010).
+  Migration file where content needs converting.
 - **Never move a major branch by hand.** `.github/workflows/major-branch.yml` fast-forwards it on
   each release; a merged fix ships to every knowledgebase within 24 hours. Only a new major's
   branch is created by hand (README, Versions).
 - **Agent-facing text** (`managed/agents-block.md`, `managed/knowledgebase/*.md`) must earn every
-  line (ADR-0007). Apply the writing-for-agents skill when editing it.
+  line. Apply the writing-for-agents skill when editing it.
+- **Architecture decisions**: an ADR records why a rule exists. Before changing a decision, check
+  `docs/adr/` for an accepted ADR; reversing one needs a superseding ADR. Write one only if a
+  person approved it: in the session, or in an approved plan or `delegate-to-agent` issue that
+  names the ADR. Otherwise the PR description is the record. Follow
+  [the format](docs/adr/0001-record-architecture-decisions.md), which states the ADR test.
 
 ## Checking a change
 

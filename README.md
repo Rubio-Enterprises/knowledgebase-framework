@@ -6,7 +6,7 @@ A knowledgebase is a folder of settled knowledge, kept as an [OKF v0.2](https://
 bundle and typed by [Diátaxis](https://diataxis.fr) mode and genre. It can be a whole git
 repository or a folder inside one.
 
-The framework reaches a knowledgebase in two parts (ADR-0001):
+The framework reaches a knowledgebase in two parts (ADR-0013):
 
 - **The Shell**: the files Copier writes when the knowledgebase is created and refreshes on
   `copier update`.
@@ -72,7 +72,7 @@ repository. Copier prints two things to add to the repository once:
 
 The VS Code entries go to the repository root's `.vscode/`, merged with what is there. One
 repository can hold several knowledgebases; the Hooks find each by its
-`.copier-answers.knowledgebase.yml` and check each on its own (ADR-0008).
+`.copier-answers.knowledgebase.yml` and check each on its own.
 
 A knowledgebase opts itself out of markdownlint with its own `.markdownlint.jsonc`, so a repository
 that lints Markdown keeps linting everything else (ADR-0006).
@@ -87,7 +87,7 @@ lefthook run kb-diagrams
 ```
 
 - Agents read the knowledgebase's `AGENTS.md`, which points them at `.knowledgebase/blueprints.md`
-  and `.knowledgebase/reference.md` when they need them (ADR-0007).
+  and `.knowledgebase/reference.md` when they need them.
 - `lefthook run kb-check` runs every check a commit runs.
 - `lefthook run kb-diagrams` re-exports every LikeC4 view.
 
@@ -97,7 +97,7 @@ lefthook run kb-diagrams
 - The major branch (`v2`) moves forward with every v2.x release:
   `.github/workflows/major-branch.yml` fast-forwards it to the release's tag. The Hooks follow it, so fixes reach every knowledgebase
   within 24 hours without anyone visiting it (ADR-0004). The workflow never creates a new major's
-  branch; that is created by hand, with its Migration file (ADR-0010).
+  branch; that is created by hand, with its Migration file (ADR-0004).
 - A change the Hooks can't make themselves needs `copier update`. Raise `hooks/shell-version` to
   the release that carries it, and every knowledgebase created from an older Shell prints a notice
   on its next commit. To update one, run this in its folder:
@@ -110,7 +110,7 @@ lefthook run kb-diagrams
   required field, a stricter check with no auto-fix) is a new major. Its `_migrations` entry in
   `copier.yml` runs `shell/migrate.sh`, which switches a root knowledgebase's `lefthook.yml` ref
   and leaves `shell/migrations/<version>.md` as `MIGRATION-<version>.md` for an agent
-  (ADR-0010). To release it:
+  (ADR-0004). To release it:
   1. Merge it with a `!` commit; release-please tags `vN.0.0`.
   2. Create the `vN` branch at that tag by hand, the one branch move made by hand.
   3. Announce it to the previous major: on a commit on top of its branch, raise

@@ -1,4 +1,4 @@
-# Knowledgebase Framework: the Shell (ADR-0001). `copier copy --trust` creates a knowledgebase;
+# Knowledgebase Framework: the Shell (ADR-0013). `copier copy --trust` creates a knowledgebase;
 # `copier update --trust -a .copier-answers.knowledgebase.yml` refreshes it. The Hooks reach
 # knowledgebases separately, through lefthook.
 _min_copier_version: "9.15.0"
@@ -21,7 +21,7 @@ _tasks:
 
 # Each major version adds a version-gated `_migrations` entry: shell/migrate.sh points a root
 # knowledgebase at the new major's Hooks and leaves shell/migrations/<version>.md in it as
-# MIGRATION-<version>.md (ADR-0004, ADR-0010).
+# MIGRATION-<version>.md (ADR-0004).
 _migrations:
   - version: v2.0.0
     command: ["bash", "{{ _copier_conf.src_path }}/shell/migrate.sh", "2.0.0"]
