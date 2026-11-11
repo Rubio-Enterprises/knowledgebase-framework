@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # The framework's tests: `bash tests/run.sh [group...]`. Offline once the pinned tools are cached.
 # Groups: syntax reference creation embedded fixtures update fail-closed managed unstaged markdownlint
-# likec4 notices citations
+# likec4 notices citations adr
 # KB_TEST_VERBOSE=1 shows evidence lines; KB_TEST_KEEP=1 keeps the scratch folder.
 set -uo pipefail
 # shellcheck source=tests/lib.sh
@@ -182,6 +182,58 @@ group_fixtures() {
     out="$(cd "$kb" && git add -A && git commit -m "docs: broken" 2>&1)"
     check "must-fail fixture $name: blocks the commit at the ${expected%% *} check" \
       bash -c "printf '%s' \"\$1\" | grep -q 'the ${expected%% *} check failed' && [ \"\$(git -C '$kb' log -1 --format=%s)\" != 'docs: broken' ]" _ "$out"
+  done
+}
+
+group_adr() {
+  local layout mode repo kb out status adr=docs/adr/0001-record-architecture-decisions.md
+  for layout in root embedded; do
+    for mode in check commit; do
+      repo="$T/adr-$layout-$mode"
+      kb="$repo"
+      if [ "$layout" = embedded ]; then
+        mkdir -p "$repo"
+        git -C "$repo" init -q
+        kb="$repo/knowledge"
+      fi
+      create "$kb" -d likec4=false || {
+        fail "ADRs ($layout, $mode): create its knowledgebase" "$(cat "$T/last-copy.log")"
+        continue
+      }
+      if [ "$layout" = embedded ]; then
+        printed_wiring "$T/last-copy.log" >"$repo/lefthook.yml"
+        (cd "$repo" && lefthook install >/dev/null 2>&1)
+      fi
+      overlay "$FW/tests/fixtures/pass" "$kb"
+      overlay "$FW/tests/fixtures/adr" "$kb"
+      printf '\nSee [the repository decision](adr/0001-record-architecture-decisions.md).\n' >>"$kb/docs/about-tracing-tools.md"
+      status=0
+      if [ "$mode" = commit ]; then
+        out="$(cd "$repo" && git add -A && git commit -m "docs: add the repository decision" 2>&1)" || status=$?
+      else
+        out="$(cd "$repo" && lefthook run kb-check 2>&1)" || status=$?
+      fi
+      check "ADRs ($layout, $mode): minimal ADR and a Knowledge document linking to it pass" test "$status" -eq 0 || note "$out"
+      check "ADRs ($layout, $mode): ADR bytes are unchanged" \
+        cmp "$FW/tests/fixtures/adr/$adr" "$kb/$adr"
+      check "ADRs ($layout, $mode): no ADR index or parent section is generated" \
+        bash -c "[ ! -e '$kb/docs/adr/index.md' ] && ! grep -qi adr '$kb/docs/index.md'"
+      check "ADRs ($layout, $mode): the document inventory still contains exactly six Knowledge documents" \
+        test "$(grep -c '^\* \[' "$kb/docs/index.md")" = 6
+      if [ "$mode" = commit ]; then
+        check "ADRs ($layout, $mode): the commit leaves a clean working tree" \
+          test -z "$(git -C "$repo" status --porcelain)"
+      fi
+      printf '\nSee [a missing decision](adr/0002-missing.md).\n' >>"$kb/docs/about-tracing-tools.md"
+      status=0
+      if [ "$mode" = commit ]; then
+        out="$(cd "$repo" && git add -A && git commit -m "docs: link a missing decision" 2>&1)" || status=$?
+      else
+        out="$(cd "$repo" && lefthook run kb-check 2>&1)" || status=$?
+      fi
+      check "ADRs ($layout, $mode): a broken incoming ADR link fails the links check" \
+        bash -c "[ '$status' -ne 0 ] && printf '%s' \"\$1\" | grep -q 'links to adr/0002-missing.md, which doesn.t exist'" _ "$out" || note "$out"
+    done
   done
 }
 
@@ -497,7 +549,7 @@ group_notices() {
     bash -c "printf '%s' \"\$1\" | grep -q 'its Shell ($NEW_TAG) predates v9.0.0. Run .copier update --trust -a .copier-answers.knowledgebase.yml. in it' && [ \"\$(git -C '$kb' log -1 --format=%s)\" = 'docs: a note' ]" _ "$out"
 }
 
-ALL_GROUPS="syntax reference creation embedded fixtures update fail-closed managed unstaged markdownlint likec4 notices citations"
+ALL_GROUPS="syntax reference creation embedded fixtures adr update fail-closed managed unstaged markdownlint likec4 notices citations"
 setup_world
 # shellcheck disable=SC2048,SC2086 # group names never contain spaces
 for g in ${*:-$ALL_GROUPS}; do
