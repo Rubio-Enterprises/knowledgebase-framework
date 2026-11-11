@@ -103,5 +103,5 @@ _Avoid_: Deprecating, archiving, superseding
 **Draft**:
 A concept document with `status: draft`: knowledge still being shaped, kept in `docs/` and checked
 like any other. A knowledgebase has no scratch folder; working files that aren't knowledge live
-outside it (ADR-0011).
+outside it.
 _Avoid_: Scratch, work in progress folder

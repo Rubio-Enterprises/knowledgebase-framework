@@ -65,7 +65,7 @@ redirect links, which the Hooks check instead; git history keeps the old text.
 
 Filenames lead with the subject in kebab-case, with no date prefix: the date lives in
 `generated.at`, where a narrow file browser can't truncate it. They carry no ticket key either; the
-work item is a frontmatter link (ADR-0005).
+work item is a frontmatter link.
 
 ## Source snapshots pair a transcription with its original
 
@@ -88,4 +88,4 @@ rule; the managed preview stylesheet hides that rule under the heading.
 
 `generated.by` names whoever produced the document, in OKF's actor convention. The skeleton wrote
 `human:author` on every document, so agent-written documents claimed a human author and OKF's trust
-tiers couldn't tell agent work from human work (ADR-0009).
+tiers couldn't tell agent work from human work.

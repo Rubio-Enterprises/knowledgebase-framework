@@ -10,10 +10,10 @@
 #
 # Sourcing it instead defines the helpers and tool pins without running anything.
 #
-# A knowledgebase is any folder holding .copier-answers.knowledgebase.yml (ADR-0008). Every step
+# A knowledgebase is any folder holding .copier-answers.knowledgebase.yml. Every step
 # takes the knowledgebase's folder, never assumes the repository root, and stops the pipeline when
 # it fails. Runs from the repository root, on bash 3.2. Every tool is pinned below and reached
-# through `mise x`, so knowledgebases carry no mise.toml (ADR-0001).
+# through `mise x`, so knowledgebases carry no mise.toml (ADR-0013).
 set -euo pipefail
 
 FRAMEWORK="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
@@ -142,7 +142,7 @@ quiet() {
   return "$status"
 }
 
-# --- Step 1: managed text (ADR-0003, ADR-0007) ----------------------------------------------------
+# --- Step 1: managed text (ADR-0003) --------------------------------------------------------------
 markers_error() {
   cat >&2 <<EOF
 $1: the managed block's markers are missing or broken, so the Hooks can't tell framework text

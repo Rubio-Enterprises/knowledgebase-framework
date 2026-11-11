@@ -49,7 +49,7 @@ group_creation() {
     [ "$likec4" = false ] || expected="$(printf '%s\n%s\n' "$ROOT_FILES" "$LIKEC4_FILES" | LC_ALL=C sort)"
     check "root creation, likec4=$likec4: exactly the planned tree" \
       diff <(printf '%s\n' "$expected" | LC_ALL=C sort) <(tree_of "$kb")
-    check "root creation, likec4=$likec4: no scratch folder (ADR-0011)" \
+    check "root creation, likec4=$likec4: no scratch folder" \
       test ! -e "$kb/.scratch"
     check "root creation, likec4=$likec4: CLAUDE.md links to AGENTS.md" \
       test "$(readlink "$kb/CLAUDE.md")" = AGENTS.md

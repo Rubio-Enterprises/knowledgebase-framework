@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The Shell's Copier migration task (ADR-0010). Copier runs it in the knowledgebase's folder when
+# The Shell's Copier migration task (ADR-0004). Copier runs it in the knowledgebase's folder when
 # `copier update` crosses a major version:
 #
 #   migrate.sh <version>

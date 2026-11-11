@@ -1,33 +1,28 @@
 ---
 status: accepted
+date: 2026-10-09
 ---
 
 # Knowledgebases follow the Hooks through a floating major ref
 
-Each knowledgebase's `lefthook.yml` points at the Hooks through a floating major ref (`v1`) and
-re-fetches it every 24 hours. Fixes and additions therefore reach every knowledgebase within a
-day, with no visit to each one. A change that would make existing documents fail is a new major
-version: a renamed or removed vocabulary value, a new required field, or a stricter check with no
-auto-fix. It ships as a new ref (`v2`) with a Copier release whose version-gated `_migrations`
-switch the ref and, where content must be converted, leave a Migration file (ADR-0010), all in one
-`copier update` per knowledgebase. The floating Hooks never require a migration.
+## Context and Problem Statement
 
-## Consequences
-
-- `v1` is a branch, not a tag, so it never competes with the release tags Copier reads for
-  `copier update`. Each v1.x release moves it forward: `.github/workflows/major-branch.yml`
-  fast-forwards it to the release's tag and never forces the push. Org rulesets protect only the
-  default branch, so moving it needs no bypass.
-- The Hooks announce any update that needs `copier update`, such as a new major or a Shell change
-  they can't make themselves. They print a notice on each knowledgebase's next commit, so there is
-  no inventory or polling.
-- Lefthook skips remote config it can't fetch: with nothing cached, it installs no hook and
-  commits go through unchecked. The `lefthook.yml` that Copier writes therefore carries one local
-  check that blocks commits until the Hooks are cached. Once they are cached, offline commits
-  work normally.
+Knowledgebases need rule fixes without individual visits, but automatically fetched checks must not invalidate existing documents. How can fixes spread unattended while content conversions remain explicit?
 
 ## Considered Options
 
-- **Standards-style `stable` and `canary` channels**: promotion needs a ring of test
-  knowledgebases, which doesn't exist.
-- **An exact tag per knowledgebase**: nothing spreads until each knowledgebase is updated by hand.
+- Floating major Hooks with explicit major migrations: compatible updates follow a major branch; incompatible changes require Copier updates and Migration files.
+- Exact tag per knowledgebase: rejected because nothing spreads until each is updated manually.
+- Stable and canary channels: rejected because there is no ring of test knowledgebases.
+- Deprecation windows with commit-time migration notices: rejected because the Hooks would carry old and new paths, and notices arrive late in an agent's task.
+- Conditional pointers to managed migration notes: rejected because each migration needs a detection check and conditional managed text.
+
+## Decision Outcome
+
+Chosen option: "Floating major Hooks with explicit major migrations", because compatible rules can spread automatically without making content conversion an unattended side effect.
+
+## Consequences
+
+- Good, because compatible fixes reach every knowledgebase within 24 hours without a visit.
+- Bad, because changes that fail existing documents need a new major and a Copier update per knowledgebase; agents must complete each Migration file's done-test and delete it before committing.
+- Bad, because first-time commits must wait for the Hooks to be fetched, although cached Hooks permit offline commits.

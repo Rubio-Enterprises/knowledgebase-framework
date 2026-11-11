@@ -6,7 +6,7 @@
 #
 # It fills the managed text, seeds docs/log.md, then, on copy only, puts the knowledgebase to work:
 # a root knowledgebase gets git, its lefthook.yml, the Hooks, a first check run and a first
-# commit; an embedded one gets the wiring printed for its parent repository (ADR-0008).
+# commit; an embedded one gets the wiring printed for its parent repository.
 set -euo pipefail
 
 operation=$1
