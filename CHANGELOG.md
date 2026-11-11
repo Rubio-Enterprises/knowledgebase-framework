@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.0.3](https://github.com/Rubio-Enterprises/knowledgebase-framework/compare/v2.0.2...v2.0.3) (2026-11-11)
+
+
+### Bug Fixes
+
+* **deps:** update dependency likec4 to v1.60.0 ([#74](https://github.com/Rubio-Enterprises/knowledgebase-framework/issues/74)) ([3925720](https://github.com/Rubio-Enterprises/knowledgebase-framework/commit/39257202f6faf9fe4b051a7783e561a2bced9f1d))
+* **image:** install the hook tools as the dev user, group-writable ([#80](https://github.com/Rubio-Enterprises/knowledgebase-framework/issues/80)) ([4b44615](https://github.com/Rubio-Enterprises/knowledgebase-framework/commit/4b44615a43960d15d02fe4737a42923a64e19d3e))
+* leave repository adrs out of knowledgebase hooks ([#78](https://github.com/Rubio-Enterprises/knowledgebase-framework/issues/78)) ([11184f2](https://github.com/Rubio-Enterprises/knowledgebase-framework/commit/11184f25fd4846075f1e06cb4c6808aec8c7dce0))
+
 ## [2.0.2](https://github.com/Rubio-Enterprises/knowledgebase-framework/compare/v2.0.1...v2.0.2) (2026-10-30)
 
 
