@@ -187,6 +187,7 @@ group_fixtures() {
 
 group_adr() {
   local layout mode repo kb out status adr=docs/adr/0001-record-architecture-decisions.md
+  local fixture="$FW/tests/fixtures/adr-record/0001-record-architecture-decisions.md"
   for layout in root embedded; do
     for mode in check commit; do
       repo="$T/adr-$layout-$mode"
@@ -205,7 +206,8 @@ group_adr() {
         (cd "$repo" && lefthook install >/dev/null 2>&1)
       fi
       overlay "$FW/tests/fixtures/pass" "$kb"
-      overlay "$FW/tests/fixtures/adr" "$kb"
+      mkdir -p "$kb/docs/adr"
+      cp "$fixture" "$kb/$adr"
       printf '\nSee [the repository decision](adr/0001-record-architecture-decisions.md).\n' >>"$kb/docs/about-tracing-tools.md"
       status=0
       if [ "$mode" = commit ]; then
@@ -215,7 +217,7 @@ group_adr() {
       fi
       check "ADRs ($layout, $mode): minimal ADR and a Knowledge document linking to it pass" test "$status" -eq 0 || note "$out"
       check "ADRs ($layout, $mode): ADR bytes are unchanged" \
-        cmp "$FW/tests/fixtures/adr/$adr" "$kb/$adr"
+        cmp "$fixture" "$kb/$adr"
       check "ADRs ($layout, $mode): no ADR index or parent section is generated" \
         bash -c "[ ! -e '$kb/docs/adr/index.md' ] && ! grep -qi adr '$kb/docs/index.md'"
       check "ADRs ($layout, $mode): the document inventory still contains exactly six Knowledge documents" \
