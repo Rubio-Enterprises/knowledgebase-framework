@@ -99,7 +99,7 @@ lefthook run kb-diagrams
 
 - release-please tags each release `vX.Y.Z`; Copier creates and updates from those tags.
 - The major branch (`v2`) moves forward with every v2.x release:
-  `.github/workflows/major-branch.yml` fast-forwards it to the release's tag. The Hooks follow it, so fixes reach every knowledgebase
+  `.github/workflows/release.yml` fast-forwards it to the release's tag. The Hooks follow it, so fixes reach every knowledgebase
   within 24 hours without anyone visiting it (ADR-0004). The workflow never creates a new major's
   branch; that is created by hand, with its Migration file (ADR-0004).
 - In a repository on `@rubio-enterprises/standards`, `standards check` (`just check` and CI) runs
@@ -122,7 +122,7 @@ lefthook run kb-diagrams
   2. Create the `vN` branch at that tag by hand, the one branch move made by hand.
   3. Announce it to the previous major: on a commit on top of its branch, raise
      `hooks/shell-version` to `N.0.0`, tag it as that major's next patch, push the tag, and run
-     `major-branch.yml` with it, which fast-forwards the branch.
+     `release.yml` with it, which fast-forwards the branch.
   4. For embedded knowledgebases, release `@rubio-enterprises/standards` with the new ref in its
      `knowledgebase hooks` Check and initializer, then move the `ref` in each embedding
      repository's `lefthook.yml`.
@@ -140,49 +140,45 @@ lefthook run kb-diagrams
 | `managed/` | The only source of all managed text |
 | `tests/` | Fixtures and the end-to-end suite |
 
-With mise 2026.10.19 or later and a `NODE_AUTH_TOKEN` that can read
-`@rubio-enterprises/standards` from GitHub Packages (`export NODE_AUTH_TOKEN="$(gh auth token)"`):
+With Docker, Compose, `just` and Git available, and access to the organization's base image:
 
 ```sh
-mise trust
-mise run setup   # the standards package, its tools, the git hooks and the Hooks' pinned tools
-mise run check   # every standards Check on every tracked file
-mise run test    # bash tests/run.sh, with a JUnit report in reports/test/
+just build
+just setup   # dependencies, git hooks and the Hooks' pinned tools
+just check   # every standards Check on every tracked file
+just test    # tests/run.sh, with a JUnit report in reports/test/
 ```
 
-`mise run setup` installs `@rubio-enterprises/standards` into the gitignored `.standards/`, which
-supplies this repository's lint configs, tool pins and git hooks. Knowledgebases created by the
-framework still carry no mise config and need no standards package.
+The dev image supplies the standards Checks and installs this repository's tool pins from
+`image/mise.toml`. Knowledgebases created by the framework still carry no mise config and need
+no standards package.
 
-The suite runs offline once the pinned tools are cached: `mise run setup` installs them, with a
-Rust toolchain to build okf and Playwright's headless Chromium, and the Dev Container runs it on
-create. It runs scripts on `/bin/bash` on macOS,
+The suite runs offline once the pinned tools are cached: `just build` installs them, with a
+Rust toolchain to build okf and Playwright's headless Chromium; `just setup` prepares the Hooks' tools. It runs scripts on `/bin/bash` on macOS,
 so it checks bash 3.2 compatibility there. It copies the working tree into a
 scratch folder as release `v2.99.0` on top of the newest v1 release in its history
 (retagged `v1.0.0` for the test), serves the Hooks from a local bare clone that git's `insteadOf`
 substitutes for the GitHub URL, and then creates, commits, breaks and updates
-knowledgebases there. Pass group names to run a subset (`bash tests/run.sh
-fixtures likec4`); `KB_TEST_VERBOSE=1` prints the evidence behind each result and
+knowledgebases there. Pass group names to run a subset (`just test fixtures likec4`); `KB_TEST_VERBOSE=1` prints the evidence behind each result and
 `KB_TEST_KEEP=1` keeps the scratch folder.
 
 ## Contributing
 
 Ask questions in [repository issues](https://github.com/Rubio-Enterprises/knowledgebase-framework/issues)
 and submit changes through pull requests.
-Framework development and CI install the organization's `@rubio-enterprises/standards` package as
-described above; public framework access does not grant access to it.
+Framework development and CI use the organization's base image as described above.
 Follow the [organization PR template](https://github.com/Rubio-Enterprises/.github/blob/main/.github/PULL_REQUEST_TEMPLATE.md): use a
 Conventional Commits title, link the work item, and complete What?, Why?, How?, and
 Testing? (plus the template's relevant review and dependency sections). Keep the
 body within 400 words and run the repository checks before requesting review, after the setup above.
 
 ```bash
-mise run check
-mise run test
+just check
+just test
 ```
 
-See [AGENTS.md](AGENTS.md) for invariants and test-fixture requirements. `mise run test`
-wraps `bash tests/run.sh`; this repository has no `typecheck` or `build` task.
+See [AGENTS.md](AGENTS.md) for invariants and test-fixture requirements. `just test`
+wraps `tests/run.sh`; this repository has no `typecheck` or `package` recipe.
 
 ## License
 

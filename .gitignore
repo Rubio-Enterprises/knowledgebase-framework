@@ -1,6 +1,7 @@
 .DS_Store
 
 .DS_Store
+.env
 .envrc.local
 # Use .envrc.local for machine-local values
 *.log

@@ -1,4 +1,14 @@
-# Knowledgebase Framework
+# Agent context
+
+## Commands
+
+Run every project command through `just`, which runs it in this repository's dev image; the host carries no project toolchain.
+
+In a fresh checkout: `just build`, then `just setup`. `just --list` shows the recipes.
+
+Run a test subset with `just test fixtures likec4`; reports go to `reports/test/`.
+
+## Project shape
 
 This repository packages the Knowledgebase Framework: the Shell that Copier renders into each
 knowledgebase, and the Hooks that each knowledgebase fetches from the major branch (`v2`) at commit
@@ -27,7 +37,7 @@ the decisions.
   text the knowledgebase owns, and a change next to a local edit conflicts.
 - **Anything that would fail an existing document is a new major** (ADR-0004), shipped with a
   Migration file where content needs converting.
-- **Never move a major branch by hand.** `.github/workflows/major-branch.yml` fast-forwards it on
+- **Never move a major branch by hand.** `.github/workflows/release.yml` fast-forwards it on
   each release; a merged fix reaches every knowledgebase's commits within 24 hours. Only a new
   major's branch is created by hand (README, Versions).
 - **Agent-facing text** (`managed/agents-block.md`, `managed/knowledgebase/*.md`) must earn every
@@ -40,26 +50,7 @@ the decisions.
 
 ## Checking a change
 
-Run `just check` (the standards Checks) and `just test` (`bash tests/run.sh` plus its
+Run `just check` (the standards Checks) and `just test` (the suite in `tests/run.sh` plus its
 JUnit report); a change is done when both pass. A new rule gets a must-fail
 fixture in `tests/fixtures/fail/<name>/` with an `expect` file naming the steps that enforce it and
 a message they report.
-
-## Commands
-
-First command in a fresh checkout: `just build`.
-Never install toolchains on the host — all project commands run in the dev image through `just`.
-
-```bash
-just build
-just setup
-just check
-just fmt
-just check-pr
-just setup-hook-tools
-just test
-just shell
-just exec <cmd...>
-```
-
-Single test: `just exec uv run pytest path::test` (Python); otherwise prefix the underlying runner with `just exec`.

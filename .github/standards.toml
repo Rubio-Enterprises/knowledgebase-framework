@@ -1,0 +1,2 @@
+[workflows."release.yml"]
+reason = "Fast-forward the existing major branch to a published release tag"
