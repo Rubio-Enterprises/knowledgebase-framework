@@ -2,7 +2,7 @@
 # Check tools are supplied by base at /opt/standards
 [tools]
 node = "24.21.0"
-python = "3.14.7"
+python = "3.15.2"
 "aqua:jqlang/jq" = "1.8.2"
 rust = { version = "1.99.1", profile = "minimal" }
 "cargo:okf" = { version = "0.2.7", default-features = false, features = "validator" }
