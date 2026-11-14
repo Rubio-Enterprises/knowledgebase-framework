@@ -20,9 +20,10 @@ typed by its [Diátaxis](https://diataxis.fr) mode and its genre. Agents follow 
 
 Every commit runs the framework's Hooks. They refresh the framework's text, normalize frontmatter,
 regenerate `docs/index.md`, validate and lint the bundle, check frontmatter, citations and links,
-and re-export any LikeC4 diagrams that changed. Run the same checks any time with
-`lefthook run kb-check`, and re-export every diagram with `lefthook run kb-diagrams`. You need
-`git`, `lefthook` and `mise` on your PATH; the Hooks fetch their own pinned tools.
+and re-export any LikeC4 diagrams that changed. With a standards justfile, run `just check` and
+re-export every diagram with `just exec lefthook run kb-diagrams`. Otherwise run
+`lefthook run kb-check` and `lefthook run kb-diagrams`; the standalone Hooks need `git`,
+`lefthook` and `mise` on your PATH. The Hooks fetch their own pinned tools.
 
 ### Updates
 

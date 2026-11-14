@@ -302,10 +302,10 @@ group_managed() {
   [ -d "$T/root-likec4-false" ] || create "$T/root-likec4-false" -d likec4=false
   cp -R "$T/root-likec4-false" "$kb"
   # shellcheck disable=SC2016 # the backticks are Markdown
-  sed -i.bak 's/^Run `lefthook run kb-check`: it runs every check a commit runs\./Skip the checks./' "$kb/AGENTS.md" && rm "$kb/AGENTS.md.bak"
+  sed -i.bak 's/^With a standards justfile, run `just check`\./Skip the checks./' "$kb/AGENTS.md" && rm "$kb/AGENTS.md.bak"
   out="$(cd "$kb" && git commit -am "docs: edit the managed block" 2>&1)"
   check "managed text: an edit inside the managed block is reverted at the next commit" \
-    bash -c "git -C '$kb' show HEAD:AGENTS.md | grep -q '^Run \`lefthook run kb-check\`' && ! git -C '$kb' show HEAD:AGENTS.md | grep -q 'Skip the checks' && [ -z \"\$(git -C '$kb' status --porcelain)\" ]"
+    bash -c "git -C '$kb' show HEAD:AGENTS.md | grep -q '^With a standards justfile, run \`just check\`' && ! git -C '$kb' show HEAD:AGENTS.md | grep -q 'Skip the checks' && [ -z \"\$(git -C '$kb' status --porcelain)\" ]"
   grep -v 'knowledgebase-framework managed block' "$kb/README.md" >"$kb/README.tmp" && mv "$kb/README.tmp" "$kb/README.md"
   out="$(cd "$kb" && git commit -am "docs: drop the markers" 2>&1)"
   note "$(printf '%s\n' "$out" | strip_colors | grep -A7 'markers are missing' | head -8)"
@@ -343,7 +343,7 @@ group_unstaged() {
 
   # An unstaged edit inside the managed block: the Hooks would rewrite AGENTS.md.
   # shellcheck disable=SC2016 # the backticks are Markdown
-  sed -i.bak 's/^Run `lefthook run kb-check`: it runs every check a commit runs\./Skip the checks./' "$kb/AGENTS.md" && rm "$kb/AGENTS.md.bak"
+  sed -i.bak 's/^With a standards justfile, run `just check`\./Skip the checks./' "$kb/AGENTS.md" && rm "$kb/AGENTS.md.bak"
   commit_fails "$kb" "AGENTS.md $msg" "unstaged changes: an unstaged managed-block edit blocks the commit, naming AGENTS.md"
   check "unstaged changes: AGENTS.md is left as it was and stays unstaged" \
     bash -c "grep -q 'Skip the checks' '$kb/AGENTS.md' && ! git -C '$kb' diff --cached --name-only | grep -qx AGENTS.md"
@@ -515,9 +515,17 @@ EOF
 }
 
 group_reference() {
-  local headings contents
+  local headings contents command
   headings="$(awk '/^```/ {fence = !fence} !fence && /^## / {sub(/^## /, ""); print}' "$FW/managed/knowledgebase/reference.md")"
   contents="$(sed -n 's/^- \[\(.*\)\](#.*)$/\1/p' "$FW/managed/knowledgebase/reference.md")"
+  for command in \
+    "just exec lefthook run kb-diagrams" "lefthook run kb-diagrams" \
+    "just exec likec4 export json -o model.json assets/likec4" \
+    "mise x node@24.21.0 npm:likec4@1.59.4 -- likec4 export json -o /tmp/model.json assets/likec4" \
+    "just exec likec4 serve assets/likec4" \
+    "mise x node@24.21.0 npm:likec4@1.59.4 -- likec4 serve assets/likec4"; do
+    check "reference.md: documents $command" grep -qF "\`$command\`" "$FW/managed/knowledgebase/reference.md"
+  done
   check "reference.md: its contents list names every section, in order" test "$headings" = "$contents"
   check "reference.md: every contents link points at its section's anchor" \
     bash -c "sed -n 's/^- \\[\\(.*\\)\\](#\\(.*\\))$/\\1|\\2/p' '$FW/managed/knowledgebase/reference.md' |

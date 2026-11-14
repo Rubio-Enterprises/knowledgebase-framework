@@ -64,4 +64,4 @@ PNGs exported from `assets/likec4/` at every commit. Change their sources instea
 
 ### Checking your work
 
-Run `lefthook run kb-check`: it runs every check a commit runs. The work is done when it passes.
+With a standards justfile, run `just check`. Otherwise run `lefthook run kb-check`. The work is done when it passes.
