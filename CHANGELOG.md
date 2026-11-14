@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.4](https://github.com/Rubio-Enterprises/knowledgebase-framework/compare/v2.0.3...v2.0.4) (2026-11-14)
+
+
+### Bug Fixes
+
+* clarify knowledgebase check commands ([#87](https://github.com/Rubio-Enterprises/knowledgebase-framework/issues/87)) ([c14c709](https://github.com/Rubio-Enterprises/knowledgebase-framework/commit/c14c709dc0ded6a46310a65fb2e6208edc459642))
+
 ## [2.0.3](https://github.com/Rubio-Enterprises/knowledgebase-framework/compare/v2.0.2...v2.0.3) (2026-11-11)
 
 
