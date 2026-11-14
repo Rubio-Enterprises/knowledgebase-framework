@@ -515,9 +515,17 @@ EOF
 }
 
 group_reference() {
-  local headings contents
+  local headings contents command
   headings="$(awk '/^```/ {fence = !fence} !fence && /^## / {sub(/^## /, ""); print}' "$FW/managed/knowledgebase/reference.md")"
   contents="$(sed -n 's/^- \[\(.*\)\](#.*)$/\1/p' "$FW/managed/knowledgebase/reference.md")"
+  for command in \
+    "just exec lefthook run kb-diagrams" "lefthook run kb-diagrams" \
+    "just exec likec4 export json -o model.json assets/likec4" \
+    "mise x node@24.21.0 npm:likec4@1.59.4 -- likec4 export json -o /tmp/model.json assets/likec4" \
+    "just exec likec4 serve assets/likec4" \
+    "mise x node@24.21.0 npm:likec4@1.59.4 -- likec4 serve assets/likec4"; do
+    check "reference.md: documents $command" grep -qF "\`$command\`" "$FW/managed/knowledgebase/reference.md"
+  done
   check "reference.md: its contents list names every section, in order" test "$headings" = "$contents"
   check "reference.md: every contents link points at its section's anchor" \
     bash -c "sed -n 's/^- \\[\\(.*\\)\\](#\\(.*\\))$/\\1|\\2/p' '$FW/managed/knowledgebase/reference.md' |
