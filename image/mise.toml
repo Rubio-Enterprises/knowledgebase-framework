@@ -8,6 +8,6 @@ rust = { version = "1.99.1", profile = "minimal" }
 "cargo:okf" = { version = "0.2.7", default-features = false, features = "validator" }
 "pipx:check-jsonschema" = "0.37.4"
 "npm:likec4" = "1.59.4"
-"npm:playwright" = "1.60.0"
+"npm:playwright" = "1.65.0"
 # The tests render the Shell with copier, as a knowledgebase owner does.
 "pipx:copier" = "9.19.1"
