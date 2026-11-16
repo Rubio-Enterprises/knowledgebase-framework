@@ -63,7 +63,7 @@ url = "https://nodejs.org/dist/v24.21.0/node-v24.21.0-darwin-x64.tar.gz"
 
 [[tools."npm:likec4"]]
 version = "1.59.4"
-aube = { path = ".mise/locks/npm-likec4/1.59.4", digest = "sha256:f614b33b6cb5c853a44712391b9bb79d45418e3ec385f80165570c2a745cbc4c" }
+aube = { path = ".mise/locks/npm-likec4/1.59.4", digest = "sha256:49103941fd3fcf52d8ac1d78b2b112d6b0d76dbc21743269e6d07881badae4b7" }
 backend = "npm:likec4"
 specifiers = ["1.59.4"]
 
@@ -77,13 +77,13 @@ specifiers = ["1.60.0"]
 version = "0.37.4"
 backend = "pipx:check-jsonschema"
 specifiers = ["0.37.4"]
-uv = { path = ".mise/locks/pipx-check-jsonschema/0.37.4", digest = "sha256:e4b929497b598d75947065b83bb2ee7b4568b9526f6a902381198bde1e22c450" }
+uv = { path = ".mise/locks/pipx-check-jsonschema/0.37.4", digest = "sha256:ba5ce612ef992a4e2039bd96a4c70d715805c368c263bd020e2c481c9850d570" }
 
 [[tools."pipx:copier"]]
 version = "9.19.1"
 backend = "pipx:copier"
 specifiers = ["9.19.1"]
-uv = { path = ".mise/locks/pipx-copier/9.19.1", digest = "sha256:c94f61f66e927fb564b25dba0ce21d91f9e709aa60babb3cd32420cbbc7ada37" }
+uv = { path = ".mise/locks/pipx-copier/9.19.1", digest = "sha256:877fa9027c82de16c7ff0a93db4150a603d9eea93b2d10b74564930206671209" }
 
 [[tools.python]]
 version = "3.14.7"
