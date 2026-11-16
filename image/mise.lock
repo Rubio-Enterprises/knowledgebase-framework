@@ -62,10 +62,10 @@ checksum = "sha256:1462cb3b3046b815cf8ea436d3da450ec1a9f11dac7e5a46b0ada5305d7e8
 url = "https://nodejs.org/dist/v24.21.0/node-v24.21.0-darwin-x64.tar.gz"
 
 [[tools."npm:likec4"]]
-version = "1.59.4"
-aube = { path = ".mise/locks/npm-likec4/1.59.4", digest = "sha256:49103941fd3fcf52d8ac1d78b2b112d6b0d76dbc21743269e6d07881badae4b7" }
+version = "1.60.0"
+aube = { path = ".mise/locks/npm-likec4/1.60.0", digest = "sha256:4bd5332af4774aaa1e784675356dda456800f02a7b46a0a4ecfbc9bf08e8231c" }
 backend = "npm:likec4"
-specifiers = ["1.59.4"]
+specifiers = ["1.60.0"]
 
 [[tools."npm:playwright"]]
 version = "1.65.0"

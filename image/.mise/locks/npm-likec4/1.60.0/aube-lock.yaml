@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       likec4:
-        specifier: 1.59.4
-        version: 1.59.4(picomatch@4.0.7)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: 1.60.0
+        version: 1.60.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
 
 packages:
 
@@ -179,11 +179,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@hpcc-js/wasm-graphviz@1.22.2':
-    resolution: {integrity: sha512-qofkC1bxiQKljs95A/7a0j3mvjEdTBiDPq2W6Eh3mJGOLJ+CEtLVe5pFtzf+FZhYW/V9p9hssS1TRl9PxoV8Sw==}
+  '@hpcc-js/wasm-graphviz@1.29.2':
+    resolution: {integrity: sha512-AkArBAZERT5OxH52/+kvCHB07cZ6ZNd9GnOvjw+S880bR88D6i27XfK6xj4dBhUDxNA2QPPMdgEcky3x4TJ3KA==}
 
-  '@likec4/core@1.59.4':
-    resolution: {integrity: sha512-0XhT/wWV/UALGkiYR0X3oxUV8MxcWN8W+5h6P79jh8A7ZAZZVeu2UYYESX1X4cVWdVKQughU2Ne/AqpNA/wPuw==}
+  '@likec4/core@1.60.0':
+    resolution: {integrity: sha512-gY2ukBIIORj0bFLSXghPZwChOMzlebtZEpcsMKaDP6iJNwDmW2Os+ftRhx2QeTXSvgdRm3uyM2xCFhMtch41jg==}
 
   '@likec4/icons@1.46.4':
     resolution: {integrity: sha512-GAL7aW53Mq3RnbFGK8BxHi/vGf73F7ODqgf7yPqfv/Kslt7KxHoxr/ZDIHcSo0oF4tXhpL7GYlpsgY71UJseqw==}
@@ -386,11 +386,6 @@ packages:
       picomatch:
         optional: true
 
-  fsevents@2.3.2:
-    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
-    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
-    os: [darwin]
-
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -481,8 +476,8 @@ packages:
     resolution: {integrity: sha512-WkUDrojuJs0xkgGf2udWxa3yGBRxPtxUkB79i6aCZLRgc7PM8fZe9TosfPDcvEpQZbuFASnHYmRLBLUbmLOIIA==}
     engines: {node: '>= 12.0.0'}
 
-  likec4@1.59.4:
-    resolution: {integrity: sha512-kgVPTlhMr1KeSRnPv2RRXiDF04b4rHANCEDov/nxdGnS/jSQFuNBn8nbUEpHKQxc/kVFHJ+bQuXI28FhmXxSJQ==}
+  likec4@1.60.0:
+    resolution: {integrity: sha512-VwdH2DExpk3sHHUS36oRZ4dEqTf0yb21PX3p0tM0e8fxtfAOOTc/motXdvcUlIoX3hv7lK+ndSqWkWqgmQ2PhQ==}
     engines: {node: '>=22.22.3'}
     hasBin: true
     peerDependencies:
@@ -492,8 +487,8 @@ packages:
       '@tanstack/ai-ollama': ^0.6.10
       '@tanstack/ai-openai': ^0.8.2
       '@tanstack/ai-openrouter': ^0.8.2
-      react: ^19.2.x
-      react-dom: ^19.2.x
+      react: ^19.3.x
+      react-dom: ^19.3.x
     peerDependenciesMeta:
       '@tanstack/ai':
         optional: true
@@ -528,14 +523,14 @@ packages:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
 
-  playwright-core@1.60.0:
-    resolution: {integrity: sha512-9bW6zvX/m0lEbgTKJ6YppOKx8H3VOPBMOCFh2irXFOT4BbHgrx5hPjwJYLT40Lu+4qtD36qKc/Hn56StUW57IA==}
-    engines: {node: '>=18'}
+  playwright-core@1.64.0:
+    resolution: {integrity: sha512-T9r+MZkTECl2+oUcZ26YgZzTrYidTsIhYYkJix+6iDOymOb1FB2RLLSOxRGnZGv5DStt+aduIVbt+E8WygXYpg==}
+    engines: {node: '>=20'}
     hasBin: true
 
-  playwright@1.60.0:
-    resolution: {integrity: sha512-hheHdokM8cdqCb0lcE3s+zT4t4W+vvjpGxsZlDnikarzx8tSzMebh3UiFtgqwFwnTnjYQcsyMF8ei2mCO/tpeA==}
-    engines: {node: '>=18'}
+  playwright@1.64.0:
+    resolution: {integrity: sha512-kVzTnYFYEyQ9RGzBjNCd2+yEqWmVbxl3AHPynv3qQ6JTjv4a+kwRcnqQwIpuP3NnrnIrE/Q6wWAIAvMfIE2/Yg==}
+    engines: {node: '>=20'}
     hasBin: true
 
   postcss@8.5.33:
@@ -592,11 +587,6 @@ packages:
   type-fest@4.41.0:
     resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
     engines: {node: '>=16'}
-
-  use-sync-external-store@1.7.0:
-    resolution: {integrity: sha512-6L+EeigHMQhdaIPNIFUKwfWJSwWFQ8gJbJ2DLOs5sDIegTwR9fRxvnM3uciHKjIZhFz+KAv2emhWMRvDmMcY8A==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   vite-plugin-singlefile@2.3.4:
     resolution: {integrity: sha512-1FAhlTCL6KJDpSUudrVU+gspapvS+tmKCg70vwNaAU6tyXn3E/C6+NnwQIze06byhBRv7VggZ78K0h+J/Rsdrg==}
@@ -663,8 +653,8 @@ packages:
     resolution: {integrity: sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw==}
     engines: {node: '>=12'}
 
-  yargs@17.7.2:
-    resolution: {integrity: sha512-7dSzzRQ++CKnNI/krKnYRV7JKKPUXMEh61soaHKg9mrWEhzFWhFnxPxGl+69cD1Ou63C13NUPCnmIcrvqCuM6w==}
+  yargs@17.7.3:
+    resolution: {integrity: sha512-GZtjxm/J/4TSxuL3FNYjCmLktBTnIw/rVmKSIyKeYAZpmJB2ig9VauCC5xsa82GNKVKDAqpOn3KVzNt0zmrU0g==}
     engines: {node: '>=12'}
 
   zod@4.6.7:
@@ -766,9 +756,9 @@ snapshots:
   '@esbuild/win32-x64@0.28.2':
     optional: true
 
-  '@hpcc-js/wasm-graphviz@1.22.2': {}
+  '@hpcc-js/wasm-graphviz@1.29.2': {}
 
-  '@likec4/core@1.59.4':
+  '@likec4/core@1.60.0':
     dependencies:
       immer: 11.2.10
       type-fest: 4.41.0
@@ -922,9 +912,6 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.7
 
-  fsevents@2.3.2:
-    optional: true
-
   fsevents@2.3.3:
     optional: true
 
@@ -983,10 +970,10 @@ snapshots:
       lightningcss-win32-arm64-msvc: 1.33.0
       lightningcss-win32-x64-msvc: 1.33.0
 
-  likec4@1.59.4(picomatch@4.0.7)(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
+  likec4@1.60.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
-      '@hpcc-js/wasm-graphviz': 1.22.2
-      '@likec4/core': 1.59.4
+      '@hpcc-js/wasm-graphviz': 1.29.2
+      '@likec4/core': 1.60.0
       '@likec4/icons': 1.46.4(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@vitejs/plugin-react': 6.3.0(vite@8.3.8(esbuild@0.28.2))
       bundle-require: 5.1.0(esbuild@0.28.2)
@@ -995,15 +982,16 @@ snapshots:
       fdir: 6.4.0(picomatch@4.0.7)
       immer: 11.2.10
       nano-spawn: 2.1.0
-      playwright: 1.60.0
+      picomatch: 4.0.7
+      playwright: 1.64.0
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
       std-env: 4.3.0
       type-fest: 4.41.0
-      use-sync-external-store: 1.7.0(react@19.3.1)
       vite: 8.3.8(esbuild@0.28.2)
       vite-plugin-singlefile: 2.3.4(vite@8.3.8(esbuild@0.28.2))
-      yargs: 17.7.2
+      yargs: 17.7.3
+      zod: 4.6.7
     transitivePeerDependencies:
       - '@rolldown/plugin-babel'
       - '@types/node'
@@ -1012,7 +1000,6 @@ snapshots:
       - jiti
       - less
       - oxc-transform-react
-      - picomatch
       - rollup
       - sass
       - sass-embedded
@@ -1032,13 +1019,11 @@ snapshots:
 
   picomatch@4.0.7: {}
 
-  playwright-core@1.60.0: {}
+  playwright-core@1.64.0: {}
 
-  playwright@1.60.0:
+  playwright@1.64.0:
     dependencies:
-      playwright-core: 1.60.0
-    optionalDependencies:
-      fsevents: 2.3.2
+      playwright-core: 1.64.0
 
   postcss@8.5.33:
     dependencies:
@@ -1105,10 +1090,6 @@ snapshots:
 
   type-fest@4.41.0: {}
 
-  use-sync-external-store@1.7.0(react@19.3.1):
-    dependencies:
-      react: 19.3.1
-
   vite-plugin-singlefile@2.3.4(vite@8.3.8(esbuild@0.28.2)):
     dependencies:
       picomatch: 4.0.7
@@ -1135,7 +1116,7 @@ snapshots:
 
   yargs-parser@21.1.1: {}
 
-  yargs@17.7.2:
+  yargs@17.7.3:
     dependencies:
       cliui: 8.0.1
       escalade: 3.2.0
