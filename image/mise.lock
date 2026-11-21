@@ -68,10 +68,10 @@ backend = "npm:likec4"
 specifiers = ["1.60.0"]
 
 [[tools."npm:playwright"]]
-version = "1.65.0"
-aube = { path = ".mise/locks/npm-playwright/1.65.0", digest = "sha256:a0160ae14997da56895a35b253d8a18920bfe465ba4a44e83349225e47ab6051" }
+version = "1.65.1"
+aube = { path = ".mise/locks/npm-playwright/1.65.1", digest = "sha256:f87d3323cec54802bd1cae015bbcbb00af6f4192ffe35c191a6ccdad4cd955e0" }
 backend = "npm:playwright"
-specifiers = ["1.65.0"]
+specifiers = ["1.65.1"]
 
 [[tools."pipx:check-jsonschema"]]
 version = "0.37.4"
