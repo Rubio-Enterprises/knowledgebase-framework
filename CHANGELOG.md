@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/Rubio-Enterprises/knowledgebase-framework/compare/v2.0.4...v2.1.0) (2026-11-21)
+
+
+### Features
+
+* put every knowledgebase in a standards repository ([e7f513e](https://github.com/Rubio-Enterprises/knowledgebase-framework/commit/e7f513ece94ea8516109036854aba1e25af77cc3))
+
 ## [2.0.4](https://github.com/Rubio-Enterprises/knowledgebase-framework/compare/v2.0.3...v2.0.4) (2026-11-14)
 
 
