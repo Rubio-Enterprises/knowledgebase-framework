@@ -1,0 +1,10 @@
+# Repository toolchain pins only, installed by Dockerfile
+# Check tools are supplied by base at /opt/standards
+# The standards knowledgebase Check needs rust and cargo:okf; the rest match the Hooks' own pins
+[tools]
+node = "24.21.0"
+python = "3.14.7"
+"aqua:jqlang/jq" = "1.8.2"
+rust = { version = "1.99.1", profile = "minimal" }
+"cargo:okf" = { version = "0.2.7", default-features = false, features = "validator" }
+"pipx:check-jsonschema" = "0.37.4"

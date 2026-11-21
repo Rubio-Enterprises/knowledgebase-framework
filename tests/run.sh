@@ -25,9 +25,16 @@ ROOT_FILES='.copier-answers.knowledgebase.yml
 .vscode/settings.json
 AGENTS.md
 CLAUDE.md
+Dockerfile
+LICENSE
 README.md
 assets/.gitkeep
+bin/setup.sh
+docs/index.md
 docs/log.md
+image/mise.lock
+image/mise.toml
+lefthook.override.yml
 lefthook.yml'
 LIKEC4_FILES='assets/likec4/index.png
 assets/likec4/likec4.config.json
@@ -53,6 +60,19 @@ group_creation() {
       test ! -e "$kb/.scratch"
     check "root creation, likec4=$likec4: CLAUDE.md links to AGENTS.md" \
       test "$(readlink "$kb/CLAUDE.md")" = AGENTS.md
+    check "root creation, likec4=$likec4: setup stages the tree and names the commands that finish it" \
+      grep -qF 'just build && just setup && just check' "$T/last-copy.log"
+    check "root creation, likec4=$likec4: AGENTS.md opens with the agent context contract and keeps its title" \
+      bash -c "[ \"\$(sed -n 1p '$kb/AGENTS.md')\" = '# Agent context' ] && [ \"\$(sed -n 3p '$kb/AGENTS.md')\" = '## Commands' ] &&
+        grep -qx '## Fixture knowledgebase' '$kb/AGENTS.md' && grep -qF '](docs/adr/0001-record-architecture-decisions.md)' '$kb/AGENTS.md'"
+    check "root creation, likec4=$likec4: the Starter Files are wired for the Hooks" \
+      bash -c "cd '$kb' && grep -q '^remotes:' lefthook.yml && grep -qF '.copier-answers.knowledgebase.yml' lefthook.override.yml &&
+        [ \"\$(grep -A1 '^USER root' Dockerfile | tail -1)\" = \"\$(cat '$FW/shell/dockerfile-compiler')\" ] &&
+        grep -q '^## License' README.md && [ -f LICENSE ] && grep -q 'lefthook install --force' bin/setup.sh &&
+        [ \"\$(sed -n 1p README.md)\" = '# Fixture knowledgebase _(root-likec4-$likec4)_' ]"
+    check "root creation, likec4=$likec4: image/mise.toml pins what the Hooks pin, the add-on's tools only with the add-on" \
+      bash -c "cd '$kb' && grep -qF '\"cargo:okf\" = { version = \"0.2.7\"' image/mise.toml && grep -q '^rust = { version = \"1.99.1\"' image/mise.toml &&
+        { grep -q 'npm:likec4' image/mise.toml; [ \$? = \$([ $likec4 = true ] && echo 0 || echo 1) ]; }"
     check "root creation, likec4=$likec4: first commit made through the Hooks" \
       bash -c "grep -q 'hook: *pre-commit' '$T/last-copy.log' && grep -q 'knowledgebase-hooks-fetched' '$T/last-copy.log' &&
         [ \"\$(git -C '$kb' log --format=%s)\" = 'chore: create knowledgebase' ] && [ -z \"\$(git -C '$kb' status --porcelain)\" ]"
@@ -66,7 +86,7 @@ group_creation() {
 }
 
 # The printed lefthook lines: the indented block after "1. Add these lines".
-printed_wiring() { strip_colors <"$1" | awk '/^1\. Add these lines/{f=1; next} f && /^Agents load/{exit} f && /^    /{sub(/^    /, ""); print}'; }
+printed_wiring() { strip_colors <"$1" | awk '/^1\. Add these lines/{f=1; next} f && /^2\. /{exit} f && /^    /{sub(/^    /, ""); print}'; }
 
 group_embedded() {
   local parent="$T/parent" out
@@ -90,6 +110,10 @@ group_embedded() {
   done
   check "embedded creation: prints lefthook lines identical to a root knowledgebase's" \
     diff <(printed_wiring "$T/copy-knowledge.log") "$FW/shell/lefthook.yml"
+  check "embedded creation: prints the pins, the compiler line and the Exclusions for the parent" \
+    bash -c "grep -qF '\"cargo:okf\" = { version' '$T/copy-knowledge.log' && grep -qF '\"npm:likec4\"' '$T/copy-knowledge.log' &&
+      ! grep -qF '\"npm:likec4\"' '$T/copy-notes.log' && grep -qF build-essential '$T/copy-notes.log' &&
+      grep -qF 'name: editorconfig-checker' '$T/copy-notes.log'"
   check "embedded creation: the parent's .vscode/ gains both entries and keeps its own" \
     bash -c "jq -e '.\"editor.tabSize\" == 2 and .\"markdown.styles\" == [\"knowledge/.knowledgebase/markdown-preview.css\", \"notes/.knowledgebase/markdown-preview.css\"]' '$parent/.vscode/settings.json' &&
       jq -e '.recommendations == [\"bierner.markdown-footnotes\"]' '$parent/.vscode/extensions.json'"
@@ -302,10 +326,10 @@ group_managed() {
   [ -d "$T/root-likec4-false" ] || create "$T/root-likec4-false" -d likec4=false
   cp -R "$T/root-likec4-false" "$kb"
   # shellcheck disable=SC2016 # the backticks are Markdown
-  sed -i.bak 's/^With a standards justfile, run `just check`\./Skip the checks./' "$kb/AGENTS.md" && rm "$kb/AGENTS.md.bak"
+  sed -i.bak 's/^Run `just check` in the repository\./Skip the checks./' "$kb/AGENTS.md" && rm "$kb/AGENTS.md.bak"
   out="$(cd "$kb" && git commit -am "docs: edit the managed block" 2>&1)"
   check "managed text: an edit inside the managed block is reverted at the next commit" \
-    bash -c "git -C '$kb' show HEAD:AGENTS.md | grep -q '^With a standards justfile, run \`just check\`' && ! git -C '$kb' show HEAD:AGENTS.md | grep -q 'Skip the checks' && [ -z \"\$(git -C '$kb' status --porcelain)\" ]"
+    bash -c "git -C '$kb' show HEAD:AGENTS.md | grep -q '^Run \`just check\` in the repository' && ! git -C '$kb' show HEAD:AGENTS.md | grep -q 'Skip the checks' && [ -z \"\$(git -C '$kb' status --porcelain)\" ]"
   grep -v 'knowledgebase-framework managed block' "$kb/README.md" >"$kb/README.tmp" && mv "$kb/README.tmp" "$kb/README.md"
   out="$(cd "$kb" && git commit -am "docs: drop the markers" 2>&1)"
   note "$(printf '%s\n' "$out" | strip_colors | grep -A7 'markers are missing' | head -8)"
@@ -343,7 +367,7 @@ group_unstaged() {
 
   # An unstaged edit inside the managed block: the Hooks would rewrite AGENTS.md.
   # shellcheck disable=SC2016 # the backticks are Markdown
-  sed -i.bak 's/^With a standards justfile, run `just check`\./Skip the checks./' "$kb/AGENTS.md" && rm "$kb/AGENTS.md.bak"
+  sed -i.bak 's/^Run `just check` in the repository\./Skip the checks./' "$kb/AGENTS.md" && rm "$kb/AGENTS.md.bak"
   commit_fails "$kb" "AGENTS.md $msg" "unstaged changes: an unstaged managed-block edit blocks the commit, naming AGENTS.md"
   check "unstaged changes: AGENTS.md is left as it was and stays unstaged" \
     bash -c "grep -q 'Skip the checks' '$kb/AGENTS.md' && ! git -C '$kb' diff --cached --name-only | grep -qx AGENTS.md"
@@ -519,13 +543,13 @@ group_reference() {
   headings="$(awk '/^```/ {fence = !fence} !fence && /^## / {sub(/^## /, ""); print}' "$FW/managed/knowledgebase/reference.md")"
   contents="$(sed -n 's/^- \[\(.*\)\](#.*)$/\1/p' "$FW/managed/knowledgebase/reference.md")"
   for command in \
-    "just exec lefthook run kb-diagrams" "lefthook run kb-diagrams" \
+    "just exec lefthook run kb-diagrams" \
     "just exec likec4 export json -o model.json assets/likec4" \
-    "mise x node@24.21.0 npm:likec4@1.59.4 -- likec4 export json -o /tmp/model.json assets/likec4" \
-    "just exec likec4 serve assets/likec4" \
-    "mise x node@24.21.0 npm:likec4@1.59.4 -- likec4 serve assets/likec4"; do
+    "just exec likec4 serve assets/likec4"; do
     check "reference.md: documents $command" grep -qF "\`$command\`" "$FW/managed/knowledgebase/reference.md"
   done
+  check "managed text: names no host command" \
+    bash -c "! grep -rnE 'mise x|Otherwise|standards justfile|\`lefthook run' '$FW/managed'"
   check "reference.md: its contents list names every section, in order" test "$headings" = "$contents"
   check "reference.md: every contents link points at its section's anchor" \
     bash -c "sed -n 's/^- \\[\\(.*\\)\\](#\\(.*\\))$/\\1|\\2/p' '$FW/managed/knowledgebase/reference.md' |

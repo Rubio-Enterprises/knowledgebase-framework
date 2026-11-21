@@ -29,16 +29,17 @@ layout is what it is: [`docs/layout-rationale.md`](docs/layout-rationale.md).
 
 ### Dependencies
 
-- `git`, `mise`, `lefthook` and `copier` (9.15 or later) on your PATH, and a C linker (`cc`, from
-  Xcode's Command Line Tools or build-essential) for compiling okf. Nothing else: the Hooks fetch
-  every tool they use through `mise x`, including the node that likec4 and Playwright run on and
-  the Rust toolchain that compiles okf.
-- Nothing for mise's `locked` setting: the Hooks carry no lockfile, so they run their pinned tools
-  with lockfiles off, neither required nor written. Everything else stays locked.
-- No framework credential is needed: Copier and lefthook fetch this public repository over HTTPS.
-- A network connection the first time. The Hooks download their pinned tools through `mise x` on
-  first use (okf is compiled from source, which took 13 seconds on an M-series Mac), and the LikeC4 add-on
-  downloads Playwright's headless Chromium.
+Every knowledgebase lives in a repository on `@rubio-enterprises/standards`, and its Hooks run in
+that repository's dev image (ADR-0014).
+
+- Docker with Compose, `just`, `git` and `copier` (9.15 or later) on your PATH, and access to the
+  organization's base image.
+- To create a knowledgebase as its own repository: `npm`, and a GitHub token that can read the
+  organization's packages, from `NODE_AUTH_TOKEN` or `gh auth token`. The setup task runs the
+  standards Initializer with it.
+- No framework credential: Copier and lefthook fetch this public repository over HTTPS.
+- A network connection the first time. `just build` compiles okf from source, and the Hooks
+  download their other pinned tools through `mise x` on first use.
 
 ### Create a knowledgebase
 
@@ -51,31 +52,48 @@ per line as `<path>: <scope>`), and whether to add the LikeC4 add-on (default ye
 its setup task run.
 
 When `<folder>` isn't inside a git repository, the knowledgebase is a repository of its own. The
-setup task runs `git init`, writes `lefthook.yml` (the Hooks remote plus a check that blocks
-commits until the Hooks are fetched), installs the hooks, runs every check once to fetch the
-tools, and makes the first commit. It also adds the preview stylesheet and the Markdown Footnotes
-extension to `.vscode/`, and prints a line for the `AGENTS.md` of any workspace above the folder.
+setup task runs `git init`, then makes it a standards repository:
+
+- It writes `image/mise.toml` with the tools the Hooks pin, then runs the standards Initializer,
+  which lays down the Starter Files and locks those pins.
+- It adds the Hooks remote to `lefthook.yml`, a C compiler to the `Dockerfile` (okf compiles from
+  source), Exclusions for the framework's own files to `lefthook.override.yml`, and a line to
+  `bin/setup.sh` that fetches the Hooks.
+- It opens `AGENTS.md` with the agent context contract, adds Contributing and License sections to
+  `README.md`, and writes an `UNLICENSED` `LICENSE` for you to replace.
+- It adds the preview stylesheet and the Markdown Footnotes extension to `.vscode/`, stages
+  everything, and prints a line for the `AGENTS.md` of any workspace above the folder.
+
+Then build the image and make the first commit:
+
+```sh
+just build && just setup && just check
+git add -A && git commit -m "chore: create knowledgebase"
+```
+
+With the LikeC4 add-on, also install Playwright's headless Chromium and its system libraries in
+the `Dockerfile`; the setup task doesn't. Rubio-Enterprises/knowledge shows how.
 
 ### Embed a knowledgebase in a repository
 
-Run the same command with a `<folder>` inside an existing repository. The knowledgebase gets its
-own control documents, but no `lefthook.yml` and no commit, because those belong to the
-repository. Copier prints two things to add to the repository once:
+Run the same command with a `<folder>` inside an existing standards repository. The knowledgebase
+gets its own control documents, but no Starter Files and no commit, because those belong to the
+repository. Copier prints what to add to the repository once:
 
-1. The lefthook lines: the Hooks remote and the fail-closed check. They go in the repository's
-   own `lefthook.yml` even when it extends shared hooks, because lefthook fetches but never runs
-   `remotes` declared in an extended file. In a repository on `@rubio-enterprises/standards`, the
-   package's initializer adds the remote when it creates `lefthook.yml`, and its `knowledgebase
-   hooks` Check fails until the remote is declared and fetched.
-2. A pointer line for the repository's `AGENTS.md`, because agents load `AGENTS.md` only from their
+1. The Hooks remote, for the repository's own `lefthook.yml`: lefthook fetches but never runs
+   `remotes` declared in an extended file. The standards `knowledgebase hooks` Check fails until
+   the remote is declared and fetched.
+2. The tool pins for `image/mise.toml`, the compiler line for the `Dockerfile` and the Exclusions
+   for `lefthook.override.yml`.
+3. A pointer line for the repository's `AGENTS.md`, because agents load `AGENTS.md` only from their
    working folder and its parents.
 
 The VS Code entries go to the repository root's `.vscode/`, merged with what is there. One
 repository can hold several knowledgebases; the Hooks find each by its
 `.copier-answers.knowledgebase.yml` and check each on its own.
 
-A knowledgebase opts itself out of markdownlint with its own `.markdownlint.jsonc`, so a repository
-that lints Markdown keeps linting everything else (ADR-0006).
+A knowledgebase opts itself out of markdownlint with its own `.markdownlint.jsonc`, so the
+repository keeps linting its other Markdown.
 
 ## Usage
 
@@ -86,14 +104,14 @@ Knowledge documents may link to ADR files, and those links are still checked for
 Run the checks or re-export diagrams from a knowledgebase's repository:
 
 ```sh
-lefthook run kb-check
-lefthook run kb-diagrams
+just check
+just exec lefthook run kb-diagrams
 ```
 
 - Agents read the knowledgebase's `AGENTS.md`, which points them at `.knowledgebase/blueprints.md`
   and `.knowledgebase/reference.md` when they need them.
-- `lefthook run kb-check` runs every check a commit runs.
-- `lefthook run kb-diagrams` re-exports every LikeC4 view.
+- `just check` runs every standards Check and every check the Hooks run at a commit.
+- `just exec lefthook run kb-diagrams` re-exports every LikeC4 view.
 
 ## Versions
 
@@ -102,8 +120,8 @@ lefthook run kb-diagrams
   `.github/workflows/release.yml` fast-forwards it to the release's tag. The Hooks follow it, so fixes reach every knowledgebase
   within 24 hours without anyone visiting it (ADR-0004). The workflow never creates a new major's
   branch; that is created by hand, with its Migration file (ADR-0004).
-- In a repository on `@rubio-enterprises/standards`, `standards check` (`just check` and CI) runs
-  the Hooks baked into the standards base image, not the fetched ones. A release reaches that copy
+- `standards check` (`just check` and CI) runs the Hooks baked into the standards base image, not
+  the fetched ones. A release reaches that copy
   when standards merges the Renovate pull request that bumps it.
 - A change the Hooks can't make themselves needs `copier update`. Raise `hooks/shell-version` to
   the release that carries it, and every knowledgebase created from an older Shell prints a notice
@@ -132,7 +150,7 @@ lefthook run kb-diagrams
 | Path | What it is |
 | --- | --- |
 | `copier.yml`, `template/` | The Shell |
-| `shell/` | The Shell's setup task and the `lefthook.yml` it writes or prints |
+| `shell/` | The Shell's setup task and the text it adds to the standards Starter Files or prints |
 | `hooks/knowledgebase.yml`, `.lefthook/` | The Hooks' lefthook config and the scripts it runs |
 | `hooks/knowledgebase.sh` | The pipeline, with every tool pinned |
 | `hooks/shell-version` | The oldest Shell the Hooks are content with |
@@ -150,8 +168,7 @@ just test    # tests/run.sh, with a JUnit report in reports/test/
 ```
 
 The dev image supplies the standards Checks and installs this repository's tool pins from
-`image/mise.toml`. Knowledgebases created by the framework still carry no mise config and need
-no standards package.
+`image/mise.toml`.
 
 The suite runs offline once the pinned tools are cached: `just build` installs them, with a
 Rust toolchain to build okf and Playwright's headless Chromium; `just setup` prepares the Hooks' tools. It runs scripts on `/bin/bash` on macOS,

@@ -1,0 +1,18 @@
+pre-commit:
+  jobs:
+    # Mise owns these frozen tool graphs, not the project resolver or linters
+    - name: uv lockfile drift
+      exclude: ["image/.mise/**"]
+    - name: yamllint
+      exclude: ["image/.mise/**"]
+    - name: fixers
+      # The Knowledgebase Framework owns its answers file, .vscode/ and assets/
+      exclude:
+        - "image/.mise/**"
+        - ".copier-answers.knowledgebase.yml"
+        - ".vscode/**"
+        - "assets/**"
+    # Rendered diagrams and exports under assets/ keep their generators' whitespace
+    - name: editorconfig-checker
+      exclude:
+        - "assets/**"

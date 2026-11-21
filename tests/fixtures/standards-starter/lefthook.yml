@@ -1,0 +1,9 @@
+# Stands in for the standards Starter File. Its one job copies the fail-closed half of the standards
+# `knowledgebase hooks` Check: lefthook skips remote Hooks it hasn't fetched, without a word.
+pre-commit:
+  jobs:
+    - name: knowledgebase-hooks-fetched
+      run: >-
+        hooks="$(git rev-parse --git-common-dir)/info/lefthook-remotes/knowledgebase-framework-v2";
+        if ! test -f "$hooks/hooks/knowledgebase.yml"; then
+        echo "Knowledgebase Hooks not fetched yet: go online and run 'lefthook install'"; exit 1; fi

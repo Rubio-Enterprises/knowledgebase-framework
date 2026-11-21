@@ -24,8 +24,11 @@ the decisions.
 - **Scripts run on bash 3.2** (macOS `/bin/bash`): no associative arrays, `mapfile`, `${var,,}`, or
   empty-array expansion under `set -u`. Steps return failures explicitly, because `set -e` is off
   inside functions called from `if` or `||`.
-- **Tools are pinned in `hooks/knowledgebase.sh`** and reached through `mise x`. Knowledgebases
-  carry no `image/mise.toml`.
+- **Tools are pinned in `hooks/knowledgebase.sh`** and reached through `mise x`.
+  `shell/image-pins.toml` and `shell/image-pins-likec4.toml` repeat those pins for a knowledgebase
+  repository's dev image; change them together.
+- **Knowledgebases live in standards repositories** (ADR-0014). Managed text names `just`
+  commands only, never a host command.
 - **The Hooks reach a repository two ways.** Commits fetch them through `remotes` in its own
   `lefthook.yml`: lefthook ignores `remotes` in an extended file. `standards check` (`just check`
   and CI) runs the copy baked into the standards base image, which takes a release only when

@@ -111,16 +111,11 @@ folder.
 
 - **Exports are automatic.** Any commit that changes a `.c4` file formats and validates the model,
   re-exports every view and deletes the PNG of any view that no longer exists. On demand, run
-  `just exec lefthook run kb-diagrams` with a standards justfile, or `lefthook run kb-diagrams`
-  otherwise.
+  `just exec lefthook run kb-diagrams`.
 - **A dynamic view exports as a sequence diagram** when it declares `variant sequence`, and as a
   box diagram otherwise.
-- **Check a view's content in its computed JSON**, not by eyeballing a large PNG. With a standards
-  justfile, run `just exec likec4 export json -o model.json assets/likec4`, then read
+- **Check a view's content in its computed JSON**, not by eyeballing a large PNG. Run
+  `just exec likec4 export json -o model.json assets/likec4`, then read
   `.[0].views["<view-id>"].nodes` and `.edges` in `model.json` with `just exec jq` and remove the file.
-  Otherwise run
-  `mise x node@24.21.0 npm:likec4@1.59.4 -- likec4 export json -o /tmp/model.json assets/likec4`
-  and read it with `jq`.
-- **Browse the views live** with `just exec likec4 serve assets/likec4` with a standards justfile
-  (the container port must be reachable), or
-  `mise x node@24.21.0 npm:likec4@1.59.4 -- likec4 serve assets/likec4` otherwise.
+- **Browse the views live** with `just exec likec4 serve assets/likec4` (the container port must
+  be reachable).

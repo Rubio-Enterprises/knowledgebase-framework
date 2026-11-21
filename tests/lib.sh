@@ -91,6 +91,18 @@ setup_world() {
   # Bash 3.2 first on PATH, so every script under test runs on macOS's /bin/bash.
   mkdir -p "$T/bin"
   if [ -x /bin/bash ]; then ln -s /bin/bash "$T/bin/bash"; fi
+  # The registry is a network boundary: this npm answers the standards Initializer with the Starter
+  # Files setup.sh wires, and nothing else.
+  cat >"$T/bin/npm" <<EOF
+#!/bin/sh
+[ "\$*" = "init -y @rubio-enterprises/standards@latest" ] || { echo "unexpected: npm \$*" >&2; exit 1; }
+mkdir -p bin
+for f in lefthook.yml lefthook.override.yml Dockerfile bin/setup.sh; do
+  [ -e "\$f" ] || cp "$FW/tests/fixtures/standards-starter/\$f" "\$f"
+done
+: >>image/mise.lock
+EOF
+  chmod +x "$T/bin/npm"
   PATH="$T/bin:$PATH"
 
   cat >"$T/gitconfig" <<EOF
@@ -120,8 +132,9 @@ EOF
   FRAMEWORK_REPO="$fwrepo"
 }
 
-# create <destination> [--vcs-ref <tag>] [copier --data/-d arguments...]: copier copy, its output
-# without colours in $T/last-copy.log.
+# create <destination> [--vcs-ref <tag>] [copier --data/-d arguments...]: copier copy, then the
+# first commit a root knowledgebase's owner makes through the Hooks; the output of both, without
+# colours, in $T/last-copy.log.
 create() {
   local dest=$1 ref=$NEW_TAG
   shift
@@ -133,6 +146,11 @@ create() {
     -d name="Fixture knowledgebase" -d scope="Fixture subjects." "$@" \
     "$FRAMEWORK_REPO" "$dest" >"$T/last-copy.log" 2>&1
   local status=$?
+  if [ "$status" -eq 0 ] && [ -d "$dest/.git" ] && ! git -C "$dest" rev-parse -q --verify HEAD >/dev/null; then
+    (cd "$dest" && lefthook install && lefthook run kb-check && git add -A &&
+      git commit -m "chore: create knowledgebase") >>"$T/last-copy.log" 2>&1
+    status=$?
+  fi
   strip_colors <"$T/last-copy.log" >"$T/last-copy.txt"
   cp "$T/last-copy.txt" "$T/last-copy.log"
   return "$status"
