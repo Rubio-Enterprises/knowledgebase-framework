@@ -4,7 +4,7 @@
 node = "24.22.3"
 python = "3.14.7"
 "aqua:jqlang/jq" = "1.8.2"
-rust = { version = "1.99.1", profile = "minimal" }
+rust = { version = "1.100.0", profile = "minimal" }
 "cargo:okf" = { version = "0.2.7", default-features = false, features = "validator" }
 "pipx:check-jsonschema" = "0.37.4"
 "npm:likec4" = "1.60.0"
