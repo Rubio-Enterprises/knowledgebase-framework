@@ -61,7 +61,7 @@ group_creation() {
     check "root creation, likec4=$likec4: CLAUDE.md links to AGENTS.md" \
       test "$(readlink "$kb/CLAUDE.md")" = AGENTS.md
     check "root creation, likec4=$likec4: setup stages the tree and names the commands that finish it" \
-      grep -qF 'just build && just setup && just check' "$T/last-copy.log"
+      grep -qF 'just build-dev && just setup && just check' "$T/last-copy.log"
     check "root creation, likec4=$likec4: AGENTS.md opens with the agent context contract and keeps its title" \
       bash -c "[ \"\$(sed -n 1p '$kb/AGENTS.md')\" = '# Agent context' ] && [ \"\$(sed -n 3p '$kb/AGENTS.md')\" = '## Commands' ] &&
         grep -qx '## Fixture knowledgebase' '$kb/AGENTS.md' && grep -qF '](docs/adr/0001-record-architecture-decisions.md)' '$kb/AGENTS.md'"
