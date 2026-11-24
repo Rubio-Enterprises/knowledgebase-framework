@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0](https://github.com/Rubio-Enterprises/knowledgebase-framework/compare/v2.1.0...v3.0.0) (2026-11-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* adopt the shared recipe vocabulary ([#99](https://github.com/Rubio-Enterprises/knowledgebase-framework/issues/99))
+
+### Features
+
+* adopt the shared recipe vocabulary ([#99](https://github.com/Rubio-Enterprises/knowledgebase-framework/issues/99)) ([5d525f2](https://github.com/Rubio-Enterprises/knowledgebase-framework/commit/5d525f2be0ed8a09db346f16b33f4c44199448ea))
+
 ## [2.1.0](https://github.com/Rubio-Enterprises/knowledgebase-framework/compare/v2.0.4...v2.1.0) (2026-11-21)
 
 
