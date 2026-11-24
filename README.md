@@ -38,7 +38,7 @@ that repository's dev image (ADR-0014).
   organization's packages, from `NODE_AUTH_TOKEN` or `gh auth token`. The setup task runs the
   standards Initializer with it.
 - No framework credential: Copier and lefthook fetch this public repository over HTTPS.
-- A network connection the first time. `just build` compiles okf from source, and the Hooks
+- A network connection the first time. `just build-dev` compiles okf from source, and the Hooks
   download their other pinned tools through `mise x` on first use.
 
 ### Create a knowledgebase
@@ -67,7 +67,7 @@ setup task runs `git init`, then makes it a standards repository:
 Then build the image and make the first commit:
 
 ```sh
-just build && just setup && just check
+just build-dev && just setup && just check
 git add -A && git commit -m "chore: create knowledgebase"
 ```
 
@@ -161,7 +161,7 @@ just exec lefthook run kb-diagrams
 With Docker, Compose, `just` and Git available, and access to the organization's base image:
 
 ```sh
-just build
+just build-dev
 just setup   # dependencies, git hooks and the Hooks' pinned tools
 just check   # every standards Check on every tracked file
 just test    # tests/run.sh, with a JUnit report in reports/test/
@@ -170,7 +170,7 @@ just test    # tests/run.sh, with a JUnit report in reports/test/
 The dev image supplies the standards Checks and installs this repository's tool pins from
 `image/mise.toml`.
 
-The suite runs offline once the pinned tools are cached: `just build` installs them, with a
+The suite runs offline once the pinned tools are cached: `just build-dev` installs them, with a
 Rust toolchain to build okf and Playwright's headless Chromium; `just setup` prepares the Hooks' tools. It runs scripts on `/bin/bash` on macOS,
 so it checks bash 3.2 compatibility there. It copies the working tree into a
 scratch folder as release `v2.99.0` on top of the newest v1 release in its history

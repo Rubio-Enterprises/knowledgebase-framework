@@ -121,7 +121,7 @@ if [ -z "$path" ]; then
 
 The knowledgebase is a standards repository. Finish it in $kb:
 
-    just build && just setup && just check
+    just build-dev && just setup && just check
     git add -A && git commit -m "chore: create knowledgebase"
 
 LICENSE says UNLICENSED: replace it, and README.md's License section, if the repository is licensed.
@@ -150,7 +150,7 @@ $({
     [ ! -d assets/likec4 ] || cat "$FRAMEWORK/shell/image-pins-likec4.toml"
   } | sed 's/^/    /')
 
-3. Add this line to its Dockerfile after \`USER root\`, then run \`just build\`:
+3. Add this line to its Dockerfile after \`USER root\`, then run \`just build-dev\`:
 
 $(sed 's/^/    /' "$FRAMEWORK/shell/dockerfile-compiler")
 
