@@ -67,6 +67,7 @@ specifiers = ["1.65.1"]
 version = "0.39.0"
 backend = "pipx:check-jsonschema"
 specifiers = ["0.39.0"]
+uv = { path = ".mise/locks/pipx-check-jsonschema/0.39.0", digest = "sha256:1d690d5190f6d1644ff0042111fd11fb22dac457e78a39e72eb6a0607fae54cf" }
 
 [[tools."pipx:copier"]]
 version = "9.19.1"
